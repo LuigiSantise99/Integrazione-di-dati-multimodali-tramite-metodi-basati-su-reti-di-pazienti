@@ -17,11 +17,22 @@ data_type_rppa = f"dataset/cancer/{cancer_type}_RPPA.csv"
 df_rppa = pd.read_csv(data_type_rppa)
 df_mirna = pd.read_csv(data_type_mirna)
 df_rnaseq = pd.read_csv(data_type_rnaseq)
-df_methy = pd.read_csv(data_type_methy, nrows=2) # ci mette molto tempo a caricare il file intero
+#df_methy = pd.read_csv(data_type_methy, nrows=2) # ci mette molto tempo a caricare il file intero
 
 print(df_mirna.shape, df_rnaseq.shape, df_rppa.shape)
 
-def apply_rsvd(data_matrix, n_components=50):
+def calculate_n_components(df, proportion=0.1):
+    """
+    Calcola il numero di componenti da mantenere, tenendo conto che n_components non deve superare il numero di righe.
+    
+    :param df: Il dataframe con i dati.
+    :param proportion: La proporzione delle colonne da mantenere.
+    :return: Il numero di componenti da usare nell'RSVD.
+    """
+    n_components = int(df.shape[1] * proportion)  # Calcola il numero di componenti basato sulle colonne
+    return min(n_components, df.shape[0])  # Limita il numero di componenti al numero di righe
+
+def apply_rsvd(data_matrix, n_components):
     """
     Applica RSVD su un set di dati.
     data_matrix: DataFrame con dati multi-omici
@@ -39,10 +50,16 @@ def apply_rsvd(data_matrix, n_components=50):
     # Restituisce il risultato come DataFrame
     return pd.DataFrame(X_reduced, index=data_matrix.index)
 
+n_components_mirna = calculate_n_components(df_mirna, proportion=0.2)  # 20% per miRNA
+n_components_rnaseq = calculate_n_components(df_rnaseq, proportion=0.05)  # 5% per RNASeq
+n_components_rppa = calculate_n_components(df_rppa, proportion=0.2)  # 20% per RPPA
+#n_components_methy = calculate_n_components(df_methy, proportion=0.01)  # 1% per Methy
+print(n_components_mirna, n_components_rnaseq, n_components_rppa)
+
 # Applichiamo RSVD su ogni tipo di dato
-df_mirna_reduced = apply_rsvd(df_mirna)
-df_rnaseq_reduced = apply_rsvd(df_rnaseq)
-df_rppa_reduced = apply_rsvd(df_rppa)
+df_mirna_reduced = apply_rsvd(df_mirna, n_components_mirna)
+df_rnaseq_reduced = apply_rsvd(df_rnaseq, n_components_rnaseq)
+df_rppa_reduced = apply_rsvd(df_rppa, n_components_rppa)
 # blca_methy_reduced = apply_rsvd(df_methy)
 
 print(df_mirna_reduced.shape, df_rnaseq_reduced.shape, df_rppa_reduced.shape)

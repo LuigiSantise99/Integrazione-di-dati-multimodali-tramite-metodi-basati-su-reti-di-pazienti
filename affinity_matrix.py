@@ -60,7 +60,7 @@ print(n_components_mirna, n_components_rnaseq, n_components_rppa)
 df_mirna_reduced = apply_rsvd(df_mirna, n_components_mirna)
 df_rnaseq_reduced = apply_rsvd(df_rnaseq, n_components_rnaseq)
 df_rppa_reduced = apply_rsvd(df_rppa, n_components_rppa)
-# blca_methy_reduced = apply_rsvd(df_methy)
+# blca_methy_reduced = apply_rsvd(df_methy, n_components_methy)
 
 print(df_mirna_reduced.shape, df_rnaseq_reduced.shape, df_rppa_reduced.shape)
 
@@ -76,14 +76,17 @@ data_mirna = df_mirna[data_columns_mirna].values  # Converte i dati in un array 
 data_methy = df_methy[data_columns_methy].values  # Converte i dati in un array numpy
 data_exp = df_exp[data_columns_exp].values  # Converte i dati in un array numpy
 # labels = df_mirna[label_column].values  # Converte le etichette in un array numpy
+'''
 
 # Calcolo delle matrici di affinità
-affinity_networks_mirna = snf.make_affinity(data_mirna, metric='euclidean', K=20, mu=0.5, normalize=True)
+affinity_networks_mirna = snf.make_affinity(df_mirna_reduced, metric='euclidean', K=20, mu=0.5, normalize=True)
 print("Mirna data affinity networks created")
-affinity_networks_methy = snf.make_affinity(data_methy, metric='euclidean', K=20, mu=0.5, normalize=True)
-print("Methy data affinity networks created")
-affinity_networks_exp = snf.make_affinity(data_exp, metric='euclidean', K=20, mu=0.5, normalize=True)
-print("Exp data affinity networks created")
+affinity_networks_rnaseq = snf.make_affinity(df_rnaseq_reduced, metric='euclidean', K=20, mu=0.5, normalize=True)
+print("Rnaseq data affinity networks created")
+affinity_networks_rppa = snf.make_affinity(df_rppa_reduced, metric='euclidean', K=20, mu=0.5, normalize=True)
+print("Rppa data affinity networks created")
+# affinity_networks_methy = snf.make_affinity(blca_methy_reduced, metric='euclidean', K=20, mu=0.5, normalize=True)
+# print("Methy data affinity networks created")
 
 directory = f'{cancer_type}'
 if not os.path.exists(directory):
@@ -91,8 +94,9 @@ if not os.path.exists(directory):
 
 # Salva le matrici di affinità in npy e png
 np.save(f'{cancer_type}/fused_affinity_matrix_mirna.npy', affinity_networks_mirna)
-np.save(f'{cancer_type}/fused_affinity_matrix_methy.npy', affinity_networks_methy)
-np.save(f'{cancer_type}/fused_affinity_matrix_exp.npy', affinity_networks_exp)
+np.save(f'{cancer_type}/fused_affinity_matrix_rnaseq.npy', affinity_networks_rnaseq)
+np.save(f'{cancer_type}/fused_affinity_matrix_rppa.npy', affinity_networks_rppa)
+# np.save(f'{cancer_type}/fused_affinity_matrix_methy.npy', affinity_networks_methy)
 
 # plt.imshow(affinity_networks_mirna, cmap='viridis', interpolation='nearest')
 # plt.colorbar()
@@ -110,7 +114,7 @@ np.save(f'{cancer_type}/fused_affinity_matrix_exp.npy', affinity_networks_exp)
 # plt.savefig(f'{cancer_type}/exp_affinity_matrix_plot.png')  # Salva il plot come immagine
 
 # Calcolo della matrice di affinità fuse
-fused_affinity = snf.snf([affinity_networks_mirna, affinity_networks_methy, affinity_networks_exp], K=20)
+fused_affinity = snf.snf([affinity_networks_mirna, affinity_networks_rnaseq, affinity_networks_rppa], K=20) #manca affinity_networks_methy
 print(f"Fused affinity networks created for {cancer_type}")
 
 # Salva la matrice di affinità fusa in npy e png
@@ -120,7 +124,7 @@ plt.imshow(fused_affinity, cmap='viridis', interpolation='nearest')
 plt.colorbar()
 plt.title(f'Fused Affinity Matrix - {cancer_type}')
 plt.savefig(f'{cancer_type}/fused_affinity_matrix_plot.png')  # Salva il plot come immagine
-'''
+
 '''
 # Determinazione del numero ottimale di cluster
 best, second = snf.get_n_clusters(fused_affinity)

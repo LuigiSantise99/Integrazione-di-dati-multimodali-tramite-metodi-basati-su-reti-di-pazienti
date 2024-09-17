@@ -36,11 +36,13 @@ train:
 		viene estratto il prossimo minibatch e crea il dizionario feed_dict per passare i dati al modello
 		aggiunge la possibilità di dropout al feed_dict.
 		sess.run: esegue il grafo di addestramento focalizzandosi sulla classe model (qua viene calcolata la perdita (LOSS) del minibatch corrente)
-	5. validazione: eseguita ogni x iterazione (la x è impostata tramite una flag) 
+	5. validazione: ogni x passi, viene eseguita una validazione (la x è impostata tramite una flag) 
 		matrice di adiacenza impostata
-		con evaluate() calcolo la loss, f1_micro e macro della validazione !!!!!!!
+		incremental_evaluate() per la valutazione incrementale su tutto il dataset di validazione, usata quando il batch di validazione non ha un limite fisso
+		con evaluate(), valutazione diretta con batch di validazione di dimensione fissa, calcolo la loss, f1_micro e macro della validazione
 		ripristina la matrice di adiacenza ai dati di addestramento
-	6. ogni x interazioni (impostata da una flag) vengono calcolate f1_micro e f1_macro usando la funzione calc_f1. !!!!!
+		Accumula la perdita di validazione nel costo totale dell'epoca corrente. 
+	6. ogni x interazioni (impostata da una flag) vengono calcolate f1_micro e f1_macro usando la funzione calc_f1.
 	fine addestramento
 
 	vengono salvate le metriche e tempi di validazione e di test
@@ -50,8 +52,8 @@ train:
 
 Considerando il modello di tipo graphsage_mean, vediamo nel dettaglio il calcolo delle metriche.
 
-Metriche di addestramento
-LOSS: calcolata in due fasi principali:
+Metriche di addestramento (train)
+LOSS: calcolata quando procede con l'operazione sess.run e che include model.loss. Viene calcolata in due fasi principali:
 	1. Perdita dovuta alla regolarizzazione L2: aggiunge una componente di regolarizzazione al modello per prevenire l'overfitting, penalizzando i pesi di grande magnitudine. La regolarizzazione L2 viene applicata alle variabili (i pesi) degli aggregatori del modello e alle variabili (i pesi) utilizzati per la predizione finale. la l2_loss è il quadrato della norma L2 (somma dei quadrati dei valori del tensore) e viene moltiplicato per un fattore di regolarizzazione (un flag) che controlla quanto influisce la regolarizzazione nel calcolo della perdita complessiva.
 	2. Perdita di classificazione: 
 		a. per classificazione binaria  o multilabel (se sigmoid_loss è True), viene calcolata la perdita con tf.nn.sigmoid_cross_entropy_with_logits(logits, labels) (cross-entropy per ogni campione): logit  sono le uscite grezze del modello non ancora passate attraverso una funzione di attivzione (come la sigmoide che comprime i logits in un intervallo tra 0 e 1), le labels sono le etichette fornite dal placeholder. Infine con tf.reduce_mean() viene fatta la media  della perdita su tutti i campioni del minibatch.
@@ -59,15 +61,29 @@ LOSS: calcolata in due fasi principali:
 
 	Infine viene aggiunto il valore corrente di self.loss ai log di TensorBoard, per monitorare l'andamento della perdita durante l'allenamento. Viene creato un riassunto scalare del valore self.loss, visualizzabile con TensorBoard.
 
-F1_MICRO e F1_MACRO
+F1_MICRO e F1_MACRO: 
+	Viene usata direttamente la funzione calc_f1:
+		se non è sigmoid (quindi è softmax per la classificazione multiclasse) si convertono le predizioni e le etichette vere negli indici delle classi predette usando np.argmax.
+		se è sigmoid (classificazione multi-label), si applica una soglia di 0.5 per decidere se un'etichetta è attiva (1) o no (0).
+		usa metrics.f1_score() dalla libreria sklearn per calcolare le metriche f1 micro e macro.
 
 
-
-Metriche di validazione
-LOSS
-
-F1_MICRO e F1_MACRO
-
+Metriche di validazione: calcolate all'interno delle funzioni incremental_evaluate o evaluate.
+	Funzione evaluate:
+		imposta timer
+		crea il feed_dict che contiene i dati di input necessari per la validazione e ottiene anche le labels corrispondenti al minibatch
+		con sess_run() calcola le predizioni e la perdita (LOSS), considerando i dati di validazione forniti dal dizionario
+		chiama calc_f1() per calcolare le metriche F1 MICRO e F1 MACRO, utilizzando le etichette vere e le predizioni calcolate
+		restituisce la perdita, f1 micro e macro e il tempo
+	Funzione incremental_evaluate:
+		imposta timer e inizializza le liste
+		ciclo sui batch: 
+			ottiene il dizionario, le etichette e un flag che indica se tutti i batch sono stati processati
+			con sess_run() calcola le predizioni e la perdita (LOSS) su quel batch.
+			continua fino a quando finished diventa true
+		tutte le predizioni e le etichette vengono concatenate per avere un unico array
+		viene usato calc_f1()
+		resituisce la media deli LOSS, f1 micro e macro e il tempo impegato
 
 
 	

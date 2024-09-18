@@ -5,18 +5,13 @@ Creare la matrice di affinità: matrice quadrata che indica tramite una misura l
 La calcolo attraverso snf_test.py (codice snf github)
 
 unire le matrici di affinità per ogni tipo di tessuto/tumore.
-(riflessioni: non mi sono trovato più di 5000 variabili nelle matrici)
 
 graphsage: env su python 3.5, pip sui requirements e example test su supervisionato e non supervisionato
 
 creazione file json per input a graphsage.
 
-non supervisionato, con quegli input
-
 supervisionato, con quegli input
-
-stessa cosa aggiungendo le feature. 
-	(riflessioni: il numero di righe delle feature in clinical di liver è maggiore rispetto al numero di righe nei csv di exp, methy e mirna. Per gestire questo probema dovrei avere un sampleID preciso sia nei csv di exp, methy e mirna che nel file delle features. Ce l'ho solo nel secondo.)
+stessa cosa aggiungendo le feature.
 
 walk.txt condizione in più
 
@@ -24,6 +19,9 @@ tensorboard --logdir=unsup-example_data
 Vai a http://localhost:6006 nel tuo browser per vedere le visualizzazioni.
 
 Per le classi molto probabilmente devo impostare la sigmoid_loss a true (capire questa cosa appena rivedo il codice graphsage)
+
+
+
 
 to do: 
 sul git manca **MODIFICHE.md**

@@ -1,3 +1,5 @@
+progetto-tesicd
+
 I dataset caricati vengono ridotti con l'RSVD, scelgo un proporzione in modo tale da andare a ridurre le caratteristiche (colonne) dei file di dati
 
 Creare la matrice di affinità: matrice quadrata che indica tramite una misura la somiglianza tra due punti, i e j.

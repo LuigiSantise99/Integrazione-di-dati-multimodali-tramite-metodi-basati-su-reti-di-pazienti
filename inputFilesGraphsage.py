@@ -19,8 +19,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.impute import SimpleImputer
 
-cancer_type = 'kidney'
-os.makedirs('inputFilesgraphsage/{}'.format(cancer_type), exist_ok=True)
+cancer_type = 'BLCA2'
+os.makedirs('inputFilesGraphsage/{}'.format(cancer_type), exist_ok=True)
 log_dir = 'inputFilesGraphsage/{0}/{0}'.format(cancer_type)
 
 def create_graph(affinity_matrix, node_data, feats_data):
@@ -116,23 +116,25 @@ def select_features(feats_data, cancer_type):
 
 # Carica la matrice di affinità fusa
 affinity_matrix = np.load('{}/fused_affinity_matrix.npy'.format(cancer_type))
-node_ids = range(affinity_matrix.shape[0])  # o una lista di ID nodi specifici
 
 # Salva le classi dei nodi
 labels = []
-with open("../rappoporort/extracted_data_logNorm/{}/exp.csv".format(cancer_type), 'r', newline='') as csv_file:
+node_ids = []
+with open("dataset/label/{}_os.csv".format(cancer_type), 'r', newline='') as csv_file:
     reader = csv.DictReader(csv_file)
     temp_map = {}
 
     for row in reader:
-        node_id = int(row['']) # ID del nodo
-        death = int(row['Death'])  # Classe del nodo
+        node_id = row[''] # ID del nodo
+        death = int(row['nn'])  # Classe del nodo
         temp_map[node_id] = death
+        node_ids.append(node_id)
     
-    for node_id in sorted(temp_map):
+    for node_id in node_ids:
         labels.append(temp_map[node_id])
 
 class_map = {node_id: label for node_id, label in zip(node_ids, labels)}
+
 with open('{}-class_map.json'.format(log_dir), 'w') as f:
     json.dump(class_map, f)
 print('Classi dei nodi salvate come JSON')
@@ -143,6 +145,7 @@ with open('{}-id_map.json'.format(log_dir), 'w') as f:
     json.dump(id_map, f)
 print('Mappa degli ID dei nodi salvata come JSON')
 
+'''
 # Salva le features dei nodi
 feats_data = pd.read_csv("../rappoporort/extracted_data_logNorm/clinical/{}".format(cancer_type), sep='\t')
 features = select_features(feats_data, cancer_type).to_numpy()
@@ -155,6 +158,8 @@ G = create_graph(affinity_matrix, class_map, features)
 with open('{}-G.json'.format(log_dir), 'w') as f:
     json.dump(json_graph.node_link_data(G), f)
 print('Grafo salvato come JSON')
+
+'''
 
 
 

@@ -26,10 +26,17 @@ log_dir = 'inputFilesGraphsage/{0}/{0}'.format(cancer_type)
 def create_graph(affinity_matrix, node_data, feats_data):
     G = nx.Graph()
 
+    # Se i nodi sono rappresentati come un array numpy, convertili in un DataFrame
+    if isinstance(feats_data, np.ndarray):
+        feats_data = pd.DataFrame(feats_data)
+
+    # Imposta gli ID dei nodi come indici del DataFrame
+    feats_data.index = node_data.keys()
+
     # Aggiungi i nodi al grafo
     for node_id, death in node_data.items():
         label = [1, 0] if death == 0 else [0, 1] # codifica one-hot
-        features = feats_data[node_id].tolist()
+        features = feats_data.loc[node_id].tolist()
         G.add_node(node_id, label=label, features=features, val=False, test=False)
 
     # Aggiungi gli archi al grafo
@@ -37,7 +44,7 @@ def create_graph(affinity_matrix, node_data, feats_data):
     for i in range(num_nodes):
         for j in range(i+1, num_nodes):
             if affinity_matrix[i, j] > 0:
-                 G.add_edge(i, j, train_removed=False, test_removed=False)
+                 G.add_edge(node_ids[i], node_ids[j], train_removed=False, test_removed=False)
 
     # Dividi i nodi in training e validation set
     train_nodes, val_nodes = train_test_split(list(G.nodes()), test_size=0.2, random_state=42)
@@ -54,11 +61,12 @@ def create_graph(affinity_matrix, node_data, feats_data):
 def select_features(feats_data):
 
     # Seleziona le colonne categoriche
-    categorical_column = ["years_to_birth","race","gender","ethnicity","patient.age_at_initial_pathologic_diagnosis"]
+    categorical_column = ["patientID", "years_to_birth","race","gender","ethnicity","patient.age_at_initial_pathologic_diagnosis"]
 
     categorical_data = feats_data[categorical_column]
+    categorical_data.set_index('patientID', inplace=True)
     categorical_data = categorical_data.astype(str)
-    print(categorical_data)
+    #print(categorical_data)
 
     # Initialize SimpleImputer to fill NaN values with a placeholder
     imputer = SimpleImputer(strategy='constant', fill_value='missing')
@@ -70,10 +78,11 @@ def select_features(feats_data):
     encoded_features = encoder.fit_transform(imputed_categorical_data)
 
     # Creazione del DataFrame delle feature codificate
-    encoded_feats_data = pd.DataFrame(encoded_features, columns=encoder.get_feature_names(categorical_column))
+    encoded_feats_data = pd.DataFrame(encoded_features, columns=encoder.get_feature_names(categorical_data.columns))
+    encoded_feats_data.index = categorical_data.index
     #pd.set_option('display.max_columns', None)
     #pd.set_option('display.max_rows', None)
-    print(encoded_feats_data)
+    #print(encoded_feats_data)
 
     return encoded_feats_data
 
@@ -115,7 +124,6 @@ features = select_features(feats_data).to_numpy()
 np.save('{}-feats.npy'.format(log_dir), features)
 print('Matrice delle feature dei nodi salvata come .npy')
 #print(features)
-
 
 # Salva il grafo (G) come JSON
 G = create_graph(affinity_matrix, class_map, features)

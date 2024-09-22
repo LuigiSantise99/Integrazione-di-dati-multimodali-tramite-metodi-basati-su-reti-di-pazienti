@@ -51,28 +51,13 @@ def create_graph(affinity_matrix, node_data, feats_data):
 
     return G
 
-def select_features(feats_data, cancer_type):
+def select_features(feats_data):
 
-    # Gestire i dati categorici
-    categorical_column = []
-    if all(col in feats_data.columns for col in ['pathologic_M', 'pathologic_N', 'pathologic_T']):
-        categorical_column.extend(['pathologic_M', 'pathologic_N', 'pathologic_T'])
-
-    if 'gender' in feats_data.columns:
-        categorical_column.append('gender')
-    elif 'gender.demographic' in feats_data.columns:
-        categorical_column.append('gender.demographic')
-    else:
-        raise ValueError("Expected 'gender' or 'gender.demographic' column not found in data.")
-    
-    if 'race.demographic' in feats_data.columns:
-        categorical_column.append('race.demographic')
-
-    if 'ethnicity.demographic' in feats_data.columns:
-        categorical_column.append('ethnicity.demographic')
-
+    # Seleziona le colonne categoriche
+    categorical_column = ["years_to_birth","race","gender","ethnicity","patient.age_at_initial_pathologic_diagnosis"]
 
     categorical_data = feats_data[categorical_column]
+    categorical_data = categorical_data.astype(str)
     print(categorical_data)
 
     # Initialize SimpleImputer to fill NaN values with a placeholder
@@ -86,33 +71,11 @@ def select_features(feats_data, cancer_type):
 
     # Creazione del DataFrame delle feature codificate
     encoded_feats_data = pd.DataFrame(encoded_features, columns=encoder.get_feature_names(categorical_column))
-    pd.set_option('display.max_columns', None)
-    pd.set_option('display.max_rows', None)
+    #pd.set_option('display.max_columns', None)
+    #pd.set_option('display.max_rows', None)
     print(encoded_feats_data)
 
-    no_categorical_column = []
-
-    # Aggiungi le colonne 'pathologic_M', 'pathologic_N' e 'pathologic_T' se non sono sarcoma o gbm
-    #if cancer_type not in ['sarcoma', 'gbm']:
-     #   features.extend(['pathologic_M', 'pathologic_N', 'pathologic_T'])
-    
-    # Aggiungi 'gender' o 'gender.demographic' a seconda di cosa è disponibile
-    #if 'gender_FEMALE' and 'gender_MALE' in encoded_feats_data.columns:
-        #features.extend(['gender_FEMALE', 'gender_MALE'])
-    #elif 'gender.demographic' in feats_data.columns:
-        #features.append('gender.demographic')
-    
-    # Aggiungi 'age_at_diagnosis.diagnoses' solo per il tipo di cancro 'kidney' (attributo numerico)
-    if cancer_type == 'kidney':
-            no_categorical_column.append('age_at_diagnosis.diagnoses')
-    
-    # Seleziona solo le colonne presenti nel DataFrame
-    selected_features = [col for col in no_categorical_column if col in feats_data.columns]
-    selected_feats_data = feats_data[selected_features]
-    combined_data = pd.concat([selected_feats_data, encoded_feats_data], axis=1)
-    print(combined_data)
-
-    return combined_data
+    return encoded_feats_data
 
 # Carica la matrice di affinità fusa
 affinity_matrix = np.load('{}/fused_affinity_matrix.npy'.format(cancer_type))
@@ -145,13 +108,14 @@ with open('{}-id_map.json'.format(log_dir), 'w') as f:
     json.dump(id_map, f)
 print('Mappa degli ID dei nodi salvata come JSON')
 
-'''
+
 # Salva le features dei nodi
-feats_data = pd.read_csv("../rappoporort/extracted_data_logNorm/clinical/{}".format(cancer_type), sep='\t')
-features = select_features(feats_data, cancer_type).to_numpy()
+feats_data = pd.read_csv("dataset/clinical/{}_clinics.csv".format(cancer_type), sep=',')
+features = select_features(feats_data).to_numpy()
 np.save('{}-feats.npy'.format(log_dir), features)
 print('Matrice delle feature dei nodi salvata come .npy')
 #print(features)
+
 
 # Salva il grafo (G) come JSON
 G = create_graph(affinity_matrix, class_map, features)
@@ -159,7 +123,10 @@ with open('{}-G.json'.format(log_dir), 'w') as f:
     json.dump(json_graph.node_link_data(G), f)
 print('Grafo salvato come JSON')
 
-'''
+
+
+
+
 
 
 

@@ -36,17 +36,19 @@ train:
 	2. matrici di adiacenza impostate per allenamento e validazione
 	3. il dataset (minibatch) viene mescolato così vengono forniti in ordine casuale.
 	
+
+
 	4. Nel ciclo principale di addestramento (quindi per ogni minibatch):
 		viene estratto il prossimo minibatch e crea il dizionario feed_dict per passare i dati al modello
 		aggiunge la possibilità di dropout al feed_dict.
-		sess.run: esegue il grafo di addestramento focalizzandosi sulla classe model (qua viene calcolata la perdita (LOSS) del minibatch corrente), 
+		sess.run: esegue il grafo di addestramento focalizzandosi sulla classe model (qua viene calcolata la perdita (LOSS) del minibatch corrente e salvata su train_cost), 
 			model.opt_op: esegue un passo di ottimizzazione che minimizza la funzione di perdita. Come funziona? Dopo aver calcolato la loss, vengono calcolati i gradienti rispetto ai parametri del modello (compute_gradients() in supervised_models.py). Successivamente viene eseguito il gradient clipping (clipped_grads_and_vars), per far rimanere il gradient all'interno di un certo limite per evitare aggiornamenti drastici dei pesi, che potrebbero rovinare il training. Successivamente viene fatto un controllo se i gradienti sono None, cioè non esistono per alcune variabili. Il primo gradiente della lista viene quindi salvato su self.grad. Infine con self.opt_op, l'ottimizzatore usa i gradienti per aggiornare i parametri del modello e ridurre la funzione di perdita (eseguito da apply_gradients() dell'ottimizzatore).
 			model.loss: calcola la train loss per il batch attuale (spiegata giù)
 			model.preds: fornisce le predizioni del modello per il batch attuale. Come funziona? Le predizioni del modello vengono generate con la funzione self.predict(), che restituisce il risultato di una funzione di attivazione (nel nostro caso la sigmoid) applicata ai valori grezzi prodotti dal modello (cioè i self.node_preds).
-			
-	
 
-	5. validazione: ogni x passi, viene eseguita una validazione (la x è impostata tramite una flag) 
+
+	
+	5. validazione: ogni x minibatch, viene eseguita una validazione (la x è impostata tramite la flag "validate_iter") 
 		matrice di adiacenza impostata
 		incremental_evaluate() per la valutazione incrementale su tutto il dataset di validazione, usata quando il batch di validazione non ha un limite fisso
 		con evaluate(), valutazione diretta con batch di validazione di dimensione fissa, calcolo la loss, f1_micro e macro della validazione
@@ -56,6 +58,9 @@ train:
 	fine addestramento
 
 	vengono salvate le metriche e tempi di validazione e di test
+
+
+
 
 
 

@@ -28,14 +28,24 @@ train:
 	Inizializzazione della sessione di TensorFlow: viene creata una sessione TF sess, merge dei tensori di riepilogo definiti in precedenza e viene creato un writer per il log.
 	Inizializzazione delle variabili: sia quelle globali e le variabili di adiacenza del grafo.
 	
+
+
+
 	Ciclo di addestramento e validazione: avviene per un numero definito di epoche (flags)
 	1. inizializzazione delle variabili per l'addestramento (step totali, tempo medio e costo di validazione per epoca)
 	2. matrici di adiacenza impostate per allenamento e validazione
 	3. il dataset (minibatch) viene mescolato così vengono forniti in ordine casuale.
-	4. ciclo sui minibatch:
+	
+	4. Nel ciclo principale di addestramento (quindi per ogni minibatch):
 		viene estratto il prossimo minibatch e crea il dizionario feed_dict per passare i dati al modello
 		aggiunge la possibilità di dropout al feed_dict.
-		sess.run: esegue il grafo di addestramento focalizzandosi sulla classe model (qua viene calcolata la perdita (LOSS) del minibatch corrente)
+		sess.run: esegue il grafo di addestramento focalizzandosi sulla classe model (qua viene calcolata la perdita (LOSS) del minibatch corrente), 
+			model.opt_op: esegue un passo di ottimizzazione che minimizza la funzione di perdita. Come funziona? Dopo aver calcolato la loss, vengono calcolati i gradienti rispetto ai parametri del modello (compute_gradients() in supervised_models.py). Successivamente viene eseguito il gradient clipping (clipped_grads_and_vars), per far rimanere il gradient all'interno di un certo limite per evitare aggiornamenti drastici dei pesi, che potrebbero rovinare il training. Successivamente viene fatto un controllo se i gradienti sono None, cioè non esistono per alcune variabili. Il primo gradiente della lista viene quindi salvato su self.grad. Infine con self.opt_op, l'ottimizzatore usa i gradienti per aggiornare i parametri del modello e ridurre la funzione di perdita (eseguito da apply_gradients() dell'ottimizzatore).
+			model.loss: calcola la train loss per il batch attuale (spiegata giù)
+			model.preds: fornisce le predizioni del modello per il batch attuale. Come funziona? Le predizioni del modello vengono generate con la funzione self.predict(), che restituisce il risultato di una funzione di attivazione (nel nostro caso la sigmoid) applicata ai valori grezzi prodotti dal modello (cioè i self.node_preds).
+			
+	
+
 	5. validazione: ogni x passi, viene eseguita una validazione (la x è impostata tramite una flag) 
 		matrice di adiacenza impostata
 		incremental_evaluate() per la valutazione incrementale su tutto il dataset di validazione, usata quando il batch di validazione non ha un limite fisso
@@ -56,7 +66,7 @@ Metriche di addestramento (train)
 LOSS: calcolata quando procede con l'operazione sess.run e che include model.loss. Viene calcolata in due fasi principali:
 	1. Perdita dovuta alla regolarizzazione L2: aggiunge una componente di regolarizzazione al modello per prevenire l'overfitting, penalizzando i pesi di grande magnitudine. La regolarizzazione L2 viene applicata alle variabili (i pesi) degli aggregatori del modello e alle variabili (i pesi) utilizzati per la predizione finale. la l2_loss è il quadrato della norma L2 (somma dei quadrati dei valori del tensore) e viene moltiplicato per un fattore di regolarizzazione (un flag) che controlla quanto influisce la regolarizzazione nel calcolo della perdita complessiva.
 	2. Perdita di classificazione: 
-		a. per classificazione binaria  o multilabel (se sigmoid_loss è True), viene calcolata la perdita con tf.nn.sigmoid_cross_entropy_with_logits(logits, labels) (cross-entropy per ogni campione): logit  sono le uscite grezze del modello non ancora passate attraverso una funzione di attivzione (come la sigmoide che comprime i logits in un intervallo tra 0 e 1), le labels sono le etichette fornite dal placeholder. Infine con tf.reduce_mean() viene fatta la media  della perdita su tutti i campioni del minibatch.
+		a. per classificazione binaria  o multilabel (se sigmoid_loss è True), viene calcolata la perdita con tf.nn.sigmoid_cross_entropy_with_logits(logits, labels) (cross-entropy per ogni campione): logit  sono le uscite grezze del modello non ancora passate attraverso una funzione di attivazione (come la sigmoide che comprime i logits in un intervallo tra 0 e 1), le labels sono le etichette fornite dal placeholder. Infine con tf.reduce_mean() viene fatta la media  della perdita su tutti i campioni del minibatch.
 		b. per classificazione multiclass (non mi interessa per il momento)
 
 	Infine viene aggiunto il valore corrente di self.loss ai log di TensorBoard, per monitorare l'andamento della perdita durante l'allenamento. Viene creato un riassunto scalare del valore self.loss, visualizzabile con TensorBoard.

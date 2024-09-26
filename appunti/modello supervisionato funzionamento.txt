@@ -72,7 +72,7 @@ LOSS: calcolata quando procede con l'operazione sess.run e che include model.los
 	1. Perdita dovuta alla regolarizzazione L2: aggiunge una componente di regolarizzazione al modello per prevenire l'overfitting, penalizzando i pesi di grande magnitudine. La regolarizzazione L2 viene applicata alle variabili (i pesi) degli aggregatori del modello e alle variabili (i pesi) utilizzati per la predizione finale. la l2_loss è il quadrato della norma L2 (somma dei quadrati dei valori del tensore) e viene moltiplicato per un fattore di regolarizzazione (un flag) che controlla quanto influisce la regolarizzazione nel calcolo della perdita complessiva.
 	2. Perdita di classificazione: 
 		a. per classificazione binaria  o multilabel (se sigmoid_loss è True), viene calcolata la perdita con tf.nn.sigmoid_cross_entropy_with_logits(logits, labels) (cross-entropy per ogni campione): logit  sono le uscite grezze del modello non ancora passate attraverso una funzione di attivazione (come la sigmoide che comprime i logits in un intervallo tra 0 e 1), le labels sono le etichette fornite dal placeholder. Infine con tf.reduce_mean() viene fatta la media  della perdita su tutti i campioni del minibatch.
-		b. per classificazione multiclass (non mi interessa per il momento)
+		b. per classificazione multiclass: viene utilizzata la funzione softmax_cross_entropy_with_logits, che calcola la cross-entropy per la classificazione multiclasse. Le label rappresentano etichette reali, che sono fornite come one-hot. tf.reduce_mean(): La perdita di cross-entropy viene mediata su tutto il batch.
 
 	Infine viene aggiunto il valore corrente di self.loss ai log di TensorBoard, per monitorare l'andamento della perdita durante l'allenamento. Viene creato un riassunto scalare del valore self.loss, visualizzabile con TensorBoard.
 
@@ -106,13 +106,29 @@ sigmoid: È usata nei problemi di multi-label classification, dove ogni esempio 
 softmax: È usata nei problemi di multi-class classification, dove ogni esempio può appartenere solo a una singola classe. Ad esempio, un'immagine può essere classificata come "gatto", "cane", o "uccello", ma solo una di queste.
 
 
-	
-		
 
 
+TRAINING: >80% dei nodi perchè viene poi suddiviso ancora per fare il test set
+Fase in cui il modello impara dai dati (un sottoinsieme del dataset complessivo). Per ogni esempio di training, il modello fa una previsione, e questa viene confrontata con l’etichetta reale (vero valore).
+La loss calcolata indica quanto la previsione è lontana dal valore corretto.
+Il modello aggiusta i pesi con l'ottimizzatore Adam per minimizzare l'errore per esempi futuri.
+Il processo viene ripetuto su tutti i dati di training per un certo numero di epoche (cicli completi attraverso l'intero dataset).
+L'obiettivo è fare in modo che il modello impari a fare buone previsioni sui dati di training, infatti man mano che il training prosegue, la loss dovrebbe diminuire, indicando che il modello sta imparando a minimizzare l'errore sui dati che ha visto finora.
 
+VALIDAZIONE: 20% dei nodi
+Fase in cui misuriamo la performance del modello su un insieme di dati che non è utilizzato durante il training. Permette di valutare come il modello si comporta su dati che non ha mai visto.
+Viene eseguita periodicamente durante il training (ogni x minibatch). 
+L'obiettivo è prevenire l'overfitting (cioè quando il modello performa molto bene sui dati di training, ma male sui dati nuovi (validazione o test). E anche monitorare la generalizzazione, cioè quanto bene il modello generalizza i dati che non ha mai visto prima (minimizzare la loss).
 
-
+TEST: il 25% del train set (quindi il 20% dei nodi), il restante rimane come train set
+Fase finale del ciclo di sviluppo di un modello che serve per valutare la performance finale del modello sui dati di test (diversi da quelli di training e di validazione). A differenza della fase di validazione, i dati di test non influenzano in alcun modo l'addestramento. Il risultato ottenuto sui dati di test rappresenta la misura finale della performance del modello.
+Nel codice la fase di test è gestita nella funzione incremental_evaluate con il parametro test=True, che viene eseguita dopo aver completato tutte le epoche di training e di validazione.
+La funzione incremental_evaluate valuta il modello in modo incrementale, batch per batch, fino a completare l'intero set di test.
+Con incremental_node_val_feed_dict viene creato un sottoinsieme di nodi del test set alla volta, in modo tale da processare i nodi in piccoli batch. Ovviamente vengono scelti i nodi che precedentemente nel grafo sono stati definiti come "test".
+	[In minibatch.py, nella classe NodeMinibatchIterator]: Per un determinato batch di nodi viene costruito il feed_dict (con la funzione batch_feed_dict), per fornire i dati al modello durante la fase di inferenza. Viene creato un elenco batch1 che converte ogni nodo in un indice tramite self.id2idx. Per ogni nodo nel batch viene generata la sua etichetta tramite _make_label_vec, creando una matrice in cui ogni riga rappresenta l'etichetta del nodo. (make_label_vec costruisce i vettori delle etichette (one-hot) per ogni nodo, prendendole dalla class_map che passiamo in input, controllando se è già una lista (per problemi multilabel), se no si costruisce un vettore di zeri pari al numero di classi).
+Continuando con il funzionamento della funzione incremental_evaluate, per ogni batch vengono calcolare le predizioni (model.preds) e la loss (model.loss), e una volta che i batch sono terminati, le predizioni e le etichette reali (labels) vengono impilate in un'unica matrice, per calcolare le metriche finali di test. Poi si calcola f1.
+La funzione restituisce la media delle perdite, i punteggi f1 e il tempo impiegato.
+La test loss e le metriche (come l'F1-score) ottenute rappresentano il valore su cui puoi basare le tue decisioni per accettare o rifiutare il modello per l'uso pratico.
 
 
 

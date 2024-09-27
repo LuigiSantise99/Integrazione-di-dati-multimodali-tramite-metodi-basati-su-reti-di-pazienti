@@ -23,23 +23,19 @@ cancer_type = 'BLCA2'
 os.makedirs('inputFilesGraphsage/{}'.format(cancer_type), exist_ok=True)
 log_dir = 'inputFilesGraphsage/{0}/{0}'.format(cancer_type)
 
-def create_graph(affinity_matrix, node_data, feats_data, feature_names):
+def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_names):
     G = nx.Graph()
 
     # Se i nodi sono rappresentati come un array numpy, convertili in un DataFrame
     if isinstance(feats_data, np.ndarray):
-        feats_data_df = pd.DataFrame(feats_data, index=node_data.keys(), columns=feature_names)
+        feats_data_df = pd.DataFrame(feats_data, index=patient_ids, columns=feature_names)
     
-    # Imposta gli ID dei nodi come indici del DataFrame
-    # feats_data_df.index = node_data.keys()
+    feats_data_df.to_csv(os.path.join('inputFilesGraphsage/', 'feats_data_df.csv'), index=True)
     
     # Aggiungi i nodi al grafo
     for node_id, death in node_data.items():
         label = [1, 0] if death == 0 else [0, 1] # codifica one-hot
         features = feats_data_df.loc[node_id].tolist()
-        if node_id == 'TCGA-FD-A43U':
-            print("ID nodo: {}".format(node_id))
-            print("Features nel grafo: {}".format(features))
         G.add_node(node_id, label=label, features=features, val=False, test=False)
         
             
@@ -84,11 +80,8 @@ def select_features(feats_data):
     # Creazione del DataFrame delle feature codificate
     encoded_feats_data = pd.DataFrame(encoded_features, columns=encoder.get_feature_names(categorical_data.columns))
     encoded_feats_data.index = categorical_data.index
-    #pd.set_option('display.max_columns', None)
-    #pd.set_option('display.max_rows', None)
-    #print(encoded_feats_data)
-
-    return encoded_feats_data.to_numpy(), encoder.get_feature_names(categorical_data.columns)
+    
+    return encoded_feats_data.to_numpy(), encoder.get_feature_names(categorical_data.columns), categorical_data.index
 
 # Carica la matrice di affinità fusa
 affinity_matrix = np.load('{}/fused_affinity_matrix.npy'.format(cancer_type))
@@ -110,7 +103,6 @@ with open("dataset/label/{}_os.csv".format(cancer_type), 'r', newline='') as csv
         labels.append(temp_map[node_id])
 
 class_map = {node_id: label for node_id, label in zip(node_ids, labels)}
-
 with open('{}-class_map.json'.format(log_dir), 'w') as f:
     json.dump(class_map, f)
 print('Classi dei nodi salvate come JSON')
@@ -124,12 +116,13 @@ print('Mappa degli ID dei nodi salvata come JSON')
 
 # Salva le features dei nodi
 feats_data = pd.read_csv("dataset/clinical/{}_clinics.csv".format(cancer_type), sep=',')
-encoded_features, feature_names = select_features(feats_data)
+encoded_features, feature_names, patient_ids = select_features(feats_data)
 np.save('{}-feats.npy'.format(log_dir), encoded_features)
+np.savetxt('inputFilesGraphsage/feats_data.txt', encoded_features, delimiter=',')
 print('Matrice delle feature dei nodi salvata come .npy')
 
 # Salva il grafo (G) come JSON
-G = create_graph(affinity_matrix, class_map, encoded_features, feature_names)
+G = create_graph(affinity_matrix, class_map, encoded_features, patient_ids, feature_names)
 with open('{}-G.json'.format(log_dir), 'w') as f:
     json.dump(json_graph.node_link_data(G), f)
 print('Grafo salvato come JSON')
@@ -152,6 +145,8 @@ def check_features_for_id(node_id):
             # Confronta le features
             if np.allclose(graph_features, saved_features):
                 print("Le features per il nodo {} corrispondono.".format(node_id))
+                print("Features nel grafo: {}".format(graph_features))
+                print("Features salvate in feats.npy: {}".format(saved_features))
             else:
                 print("Le features per il nodo {} NON corrispondono.".format(node_id))
                 print("Features nel grafo: {}".format(graph_features))
@@ -166,6 +161,8 @@ def check_features_for_id(node_id):
             # Confronta le posizioni degli 1
             if saved_positions == graph_positions:
                 print("Le posizioni degli 1 per il nodo {} corrispondono.".format(node_id))
+                print("Posizioni degli 1 nel grafo: {}".format(graph_positions))
+                print("Posizioni degli 1 salvate in feats.npy: {}".format(saved_positions))
             else:
                 print("Le posizioni degli 1 per il nodo {} NON corrispondono.".format(node_id))
                 print("Posizioni degli 1 nel grafo: {}".format(graph_positions))
@@ -176,7 +173,7 @@ def check_features_for_id(node_id):
         print("L'ID {} non è presente in id_map.".format(node_id))
 
 # Specifica l'ID del nodo che vuoi controllare
-node_id_to_check = "TCGA-FD-A43U"
+node_id_to_check = "TCGA-BL-A13I"
 check_features_for_id(node_id_to_check)
 
 

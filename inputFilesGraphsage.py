@@ -31,7 +31,7 @@ def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_na
         feats_data_df = pd.DataFrame(feats_data, index=patient_ids, columns=feature_names)
     
     feats_data_df.to_csv(os.path.join('inputFilesGraphsage/', 'feats_data_df.csv'), index=True)
-    
+
     # Aggiungi i nodi al grafo
     for node_id, death in node_data.items():
         label = [1, 0] if death == 0 else [0, 1] # codifica one-hot
@@ -86,7 +86,7 @@ def select_features(feats_data):
 # Carica la matrice di affinità fusa
 affinity_matrix = np.load('{}/fused_affinity_matrix.npy'.format(cancer_type))
 
-# Salva le classi dei nodi
+# Salva la mappa degli ID dei nodi e le classi dei nodi
 labels = []
 node_ids = []
 with open("dataset/label/{}_os.csv".format(cancer_type), 'r', newline='') as csv_file:
@@ -102,16 +102,15 @@ with open("dataset/label/{}_os.csv".format(cancer_type), 'r', newline='') as csv
     for node_id in node_ids:
         labels.append(temp_map[node_id])
 
-class_map = {node_id: label for node_id, label in zip(node_ids, labels)}
-with open('{}-class_map.json'.format(log_dir), 'w') as f:
-    json.dump(class_map, f)
-print('Classi dei nodi salvate come JSON')
-
-# Salva la mappa degli ID dei nodi
 id_map = {node_id: i for i, node_id in enumerate(node_ids)}
 with open('{}-id_map.json'.format(log_dir), 'w') as f:
     json.dump(id_map, f)
 print('Mappa degli ID dei nodi salvata come JSON')
+
+class_map = {node_id: label for node_id, label in zip(node_ids, labels)}
+with open('{}-class_map.json'.format(log_dir), 'w') as f:
+    json.dump(class_map, f)
+print('Classi dei nodi salvate come JSON')
 
 
 # Salva le features dei nodi
@@ -127,7 +126,7 @@ with open('{}-G.json'.format(log_dir), 'w') as f:
     json.dump(json_graph.node_link_data(G), f)
 print('Grafo salvato come JSON')
 
-
+'''
 def check_features_for_id(node_id):
     if node_id in id_map:
         # Ottieni l'indice associato all'ID specifico dall'id_map
@@ -175,8 +174,48 @@ def check_features_for_id(node_id):
 # Specifica l'ID del nodo che vuoi controllare
 node_id_to_check = "TCGA-BL-A13I"
 check_features_for_id(node_id_to_check)
+'''
+
+def check_all_features():
+    all_match = True
+
+    for node_id in node_ids:
+        if node_id in id_map:
+            index = id_map[node_id]
+            saved_features = encoded_features[index]
+            node_in_graph = next((data for node, data in G.nodes(data=True) if node == node_id), None)
+
+            if node_in_graph:
+                graph_features = node_in_graph['features']
+                if not np.allclose(graph_features, saved_features):
+                    all_match = False
+                    break
+            else:
+                all_match = False
+                break
+        else:
+            all_match = False
+            break
+
+    if all_match:
+        print("Tutte le features combaciano.")
+    else:
+        print("Almeno una feature non combacia.")
+
+check_all_features()
 
 
+
+'''
+# Carica il file .npy
+npy_file_path = '../GraphSAGE/example_data/toy-ppi-feats.npy'
+data = np.load(npy_file_path)
+
+# Salva il contenuto in un file .txt
+txt_file_path = 'inputFilesGraphsage/feats_data_example.txt'
+np.savetxt(txt_file_path, data, delimiter=',')
+print('File .npy convertito e salvato come .txt')
+'''
 
 '''
 if G is not None:

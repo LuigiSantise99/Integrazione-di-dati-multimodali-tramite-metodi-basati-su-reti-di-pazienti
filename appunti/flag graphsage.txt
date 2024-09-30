@@ -1,0 +1,66 @@
+Ecco un'analisi delle flag e delle loro scelte in relazione al tuo scenario, dove i nodi rappresentano pazienti e le etichette e le features sono codificate one-hot:
+
+log_device_placement (False):
+
+Disabilita il log del posizionamento del dispositivo. Poiché hai una singola GPU o CPU, non è necessario loggare su quale dispositivo sono posizionati i vari tensor.
+model (graphsage_mean):
+
+Il modello GraphSAGE (mean) calcola l'aggregazione media dei vicini. Questa scelta è appropriata per grafi con vicini di grandezza variabile e caratteristiche continue. Considerando che hai features one-hot, potrebbe funzionare bene.
+learning_rate (0.001):
+
+È un valore standard per l'addestramento stabile. Puoi abbassarlo se noti un oscillamento nella convergenza o aumentarlo per accelerare il processo a scapito della stabilità.
+model_size (small):
+
+La scelta tra "small" e "big" dipende dalla capacità computazionale e dal livello di complessità che vuoi per il modello. "small" dovrebbe essere sufficiente per il tuo dataset di 334 nodi.
+train_prefix (''):
+
+Il prefisso viene usato per identificare i dati di allenamento. Dovrai impostarlo in base alla tua struttura di file.
+epochs (50):
+
+50 epoche è una scelta ragionevole per garantire che il modello converga. Se l'accuratezza non migliora più dopo un certo punto, puoi ridurlo o aumentarlo se necessario.
+dropout (0.0):
+
+Con il dropout a 0.0, non stai applicando regolarizzazione, il che va bene se non c'è rischio di overfitting, soprattutto con un dataset relativamente piccolo.
+weight_decay (0.0):
+
+Non usi la regolarizzazione L2. Se noti overfitting, puoi provare ad aggiungere un piccolo valore (es. 0.0005).
+max_degree (128):
+
+Imposta il numero massimo di vicini da considerare per ogni nodo. Se hai nodi con gradi molto elevati, questo limita il numero di campioni per ogni nodo.
+samples_1 (25) e samples_2 (10):
+
+Rappresentano il numero di campioni da prendere nei layer 1 e 2 durante l'aggregazione dei vicini. Aumentare questi valori rende l'aggregazione più robusta ma richiede più risorse computazionali.
+samples_3 (0):
+
+Poiché non utilizzi un terzo livello, questo valore è 0. Rimane a 0 per modelli come il GraphSAGE "mean".
+dim_1 e dim_2 (128):
+
+Imposta la dimensione dell'output per i layer 1 e 2. Un'uscita più grande può catturare più informazione dai vicini, ma aumenta il costo computazionale.
+random_context (True):
+
+Usa contesti random invece di considerare solo i bordi diretti nel grafo, utile per modelli come GraphSAGE che sfruttano il campionamento.
+batch_size (512):
+
+È un valore elevato, soprattutto per un dataset di circa 334 nodi. Potresti ridurlo a circa 64 o 128 per migliorare l'efficienza.
+sigmoid (False):
+
+Se stai facendo classificazione binaria (con una sola etichetta vera), potresti impostare questo valore a True. Invece, in una classificazione multiclasse con softmax, può rimanere False.
+identity_dim (0):
+
+Non stai aggiungendo dimensioni per embedding di identità, che è ragionevole se non hai caratteristiche aggiuntive da codificare.
+validate_iter (5000):
+
+Specifichi ogni quanto eseguire una convalida. Potrebbe essere troppo alto per il tuo dataset, potresti ridurlo (es. 500 iterazioni).
+validate_batch_size (256):
+
+Usa 256 nodi per la validazione. Dato che hai circa 334 nodi, puoi adattare questa dimensione a qualcosa di più piccolo per evitare l'eccessivo uso di memoria.
+gpu (1):
+
+Specifica quale GPU usare. Assicurati di avere il GPU con ID 1 disponibile; altrimenti, usa 0.
+print_every (5):
+
+Frequenza di stampa delle informazioni di training. È un valore ragionevole per monitorare l'andamento del training.
+max_total_steps (10**10):
+
+Imposta un limite molto alto sugli step, probabilmente non lo raggiungerai mai con un dataset di questa dimensione.
+Ogni flag è configurata per bilanciare la complessità del modello e la capacità computazionale. In sintesi, la struttura del modello e i suoi parametri sono abbastanza flessibili per gestire il tuo dataset di pazienti, ma potresti voler affinare alcune flag per adattarle alle tue risorse disponibili.

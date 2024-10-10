@@ -17,7 +17,7 @@ stessa cosa aggiungendo le feature.
 
 walk.txt condizione in più
 
-tensorboard --logdir=unsup-example_data
+tensorboard --logdir=unsup-<name>
 Vai a http://localhost:6006 nel tuo browser per vedere le visualizzazioni.
 
 Per le classi molto probabilmente devo impostare la sigmoid_loss a true (capire questa cosa appena rivedo il codice graphsage)

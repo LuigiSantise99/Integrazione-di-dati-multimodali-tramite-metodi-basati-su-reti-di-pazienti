@@ -19,7 +19,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.impute import SimpleImputer
 
-cancer_type = 'BLCA2'
+cancer_type = 'PRAD1'
 os.makedirs('inputFilesGraphsage/{}'.format(cancer_type), exist_ok=True)
 log_dir = 'inputFilesGraphsage/{0}/{0}'.format(cancer_type)
 
@@ -61,9 +61,22 @@ def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_na
 def select_features(feats_data):
 
     # Seleziona le colonne categoriche
-    categorical_column = ["patientID", "years_to_birth", "race", "gender", "ethnicity", "patient.age_at_initial_pathologic_diagnosis"]
+    categorical_columns = ["patientID", "years_to_birth", "gender", "ethnicity", 
+                          "patient.age_at_initial_pathologic_diagnosis"]
+    
+    # Verifica quale colonna "race" è presente con priorità a "race"
+    if 'race' in feats_data.columns:
+        categorical_columns.append('race')
+    elif 'patient.race' in feats_data.columns:
+        categorical_columns.append('patient.race')
+    elif 'patient.clinical_cqcf.race' in feats_data.columns:
+        categorical_columns.append('patient.clinical_cqcf.race')
 
-    categorical_data = feats_data[categorical_column]
+    # Trova le colonne presenti sia nel DataFrame che nella lista categorical_columns
+    available_columns = list(set(categorical_columns).intersection(feats_data.columns))
+
+    categorical_data = feats_data[available_columns]
+    print(categorical_data.head())
     categorical_data.set_index('patientID', inplace=True)
     categorical_data = categorical_data.astype(str)
     #print(categorical_data)

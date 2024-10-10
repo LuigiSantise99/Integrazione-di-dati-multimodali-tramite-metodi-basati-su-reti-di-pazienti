@@ -7,7 +7,7 @@ import os
 import matplotlib.pyplot as plt
 from sklearn.utils.extmath import randomized_svd
 
-cancer_type = 'BLCA2'
+cancer_type = 'SKCM1'
 
 # Carica i dati
 data_type_mirna = f"dataset/cancer/{cancer_type}_miRNA.csv"

@@ -1,4 +1,12 @@
 __pycache__/
 dataset/
 BLCA2/
+BRCA1/
+BRCA2/
+KIRC1/
+LUAD2/
+LUSC3/
+OV1/
+PRAD1/
+SKCM1/
 inputFilesGraphsage/

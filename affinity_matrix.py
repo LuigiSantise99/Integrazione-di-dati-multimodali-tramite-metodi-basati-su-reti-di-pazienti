@@ -2,8 +2,6 @@ import pandas as pd
 import numpy as np
 import snf
 import os
-# from sklearn.cluster import spectral_clustering, KMeans
-# from sklearn.metrics import v_measure_score
 import matplotlib.pyplot as plt
 from sklearn.utils.extmath import randomized_svd
 
@@ -25,9 +23,9 @@ def calculate_n_components(df, proportion=0.1):
     """
     Calcola il numero di componenti da mantenere, tenendo conto che n_components non deve superare il numero di righe.
     
-    :param df: Il dataframe con i dati.
-    :param proportion: La proporzione delle colonne da mantenere.
-    :return: Il numero di componenti da usare nell'RSVD.
+    df: Il dataframe con i dati.
+    proportion: La proporzione delle colonne da mantenere.
+    return: Il numero di componenti da usare nell'RSVD.
     """
     n_components = int(df.shape[1] * proportion)  # Calcola il numero di componenti basato sulle colonne
     return min(n_components, df.shape[0])  # Limita il numero di componenti al numero di righe
@@ -35,8 +33,10 @@ def calculate_n_components(df, proportion=0.1):
 def apply_rsvd(data_matrix, n_components):
     """
     Applica RSVD su un set di dati.
-    data_matrix: DataFrame con dati multi-omici
-    n_components: Numero di componenti da mantenere dopo la riduzione dimensionale
+
+    data_matrix: DataFrame con dati multi-omici.
+    n_components: Numero di componenti da mantenere dopo la riduzione dimensionale.
+    return: Il dataframe con dimensionalità ridotta. 
     """
     # Estrae la matrice dai dati
     X = np.array(data_matrix.iloc[:, 1:], dtype=np.float64)
@@ -64,20 +64,6 @@ df_methy_reduced = apply_rsvd(df_methy, n_components_methy)
 
 print(df_mirna_reduced.shape, df_rnaseq_reduced.shape, df_rppa_reduced.shape, df_methy_reduced.shape)
 
-'''
-# Estrai i dati e le etichette
-data_columns_mirna = []
-data_columns_methy = []
-data_columns_exp = []
-# colonne corrispondenti ai tuoi dati
-# label_column = 'Death'  # colonna corrispondente alle etichette
-
-data_mirna = df_mirna[data_columns_mirna].values  # Converte i dati in un array numpy
-data_methy = df_methy[data_columns_methy].values  # Converte i dati in un array numpy
-data_exp = df_exp[data_columns_exp].values  # Converte i dati in un array numpy
-# labels = df_mirna[label_column].values  # Converte le etichette in un array numpy
-'''
-
 # Calcolo delle matrici di affinità
 affinity_networks_mirna = snf.make_affinity(df_mirna_reduced, metric='euclidean', K=20, mu=0.5, normalize=True)
 print("Mirna data affinity networks created")
@@ -98,21 +84,6 @@ np.save(f'{cancer_type}/fused_affinity_matrix_rnaseq.npy', affinity_networks_rna
 np.save(f'{cancer_type}/fused_affinity_matrix_rppa.npy', affinity_networks_rppa)
 np.save(f'{cancer_type}/fused_affinity_matrix_methy.npy', affinity_networks_methy)
 
-# plt.imshow(affinity_networks_mirna, cmap='viridis', interpolation='nearest')
-# plt.colorbar()
-# plt.title('Affinity Matrix - mirna')
-# plt.savefig(f'{cancer_type}/mirna_affinity_matrix_plot.png')  # Salva il plot come immagine
-
-# plt.imshow(affinity_networks_methy, cmap='viridis', interpolation='nearest')
-# plt.colorbar()
-# plt.title('Affinity Matrix - methy')
-# plt.savefig(f'{cancer_type}/methy_affinity_matrix_plot.png')  # Salva il plot come immagine
-
-# plt.imshow(affinity_networks_exp, cmap='viridis', interpolation='nearest')
-# plt.colorbar()
-# plt.title('Affinity Matrix - exp')
-# plt.savefig(f'{cancer_type}/exp_affinity_matrix_plot.png')  # Salva il plot come immagine
-
 # Calcolo della matrice di affinità fuse
 fused_affinity = snf.snf([affinity_networks_mirna, affinity_networks_rnaseq, affinity_networks_rppa, affinity_networks_methy], K=20)
 print(f"Fused affinity networks created for {cancer_type}")
@@ -130,18 +101,4 @@ plt.savefig(f'{cancer_type}/fused_affinity_matrix_plot.png')  # Salva il plot co
 loaded_matrix = np.load(f'{cancer_type}/fused_affinity_matrix.npy')
 print(loaded_matrix.shape)
 print(loaded_matrix[:5])  # Controlla i primi 5 valori
-'''
-
-'''
-# Determinazione del numero ottimale di cluster
-best, second = snf.get_n_clusters(fused_affinity)
-print(f"Best number of clusters: {best} - Second best number of clusters: {second}")
-
-# Clustering dello SNF fused network
-cluster_labels = spectral_clustering(fused_affinity, n_clusters=best)
-print(cluster_labels)
-
-# Valutazione del clustering rispetto alle etichette vere
-v_measure = v_measure_score(labels, cluster_labels)
-print("V-Measure Score:", v_measure)
 '''

@@ -4,28 +4,22 @@ I dataset caricati vengono ridotti con l'RSVD, scelgo un proporzione in modo tal
 
 Creare la matrice di affinità: matrice quadrata che indica tramite una misura la somiglianza tra due punti, i e j.
 
-La calcolo attraverso snf_test.py (codice snf github)
+La calcolo attraverso affinity_matrix.py (codice snf github)
 
-unire le matrici di affinità per ogni tipo di tessuto/tumore.
+unire le matrici di affinità per ogni tipo di tumore.
 
-graphsage: env su python 3.5, pip sui requirements e example test su supervisionato e non supervisionato
+graphsage: env su python 3.5, pip sui requirements e example test su supervisionato.
 
 creazione file json per input a graphsage.
 
 supervisionato, con quegli input
 stessa cosa aggiungendo le feature.
 
-walk.txt condizione in più
-
 tensorboard --logdir=unsup-<name>
 Vai a http://localhost:6006 nel tuo browser per vedere le visualizzazioni.
 
-Per le classi molto probabilmente devo impostare la sigmoid_loss a true (capire questa cosa appena rivedo il codice graphsage)
-
-
 in supervised-train ho impostato epoche a 100 (da 10) e sigmoide a true e learning_rate a 0.001 (da 0.01)(per ridurre la loss, funziona) -- riesco a ridurla solo andando ad alterare learning_rate, ma comunque rimane troppo alta, devo controllare che i dati in input siano giusti a questo punto. (ho provato anche a modificare il dropout e la weight_decay)
 
-	
 todo. salvare in un file per ogni epoca le train loss e le val loss per convertirle in un grafico e capire se entrambe scendono. appena risalgono allora salvo l'epoca prima della risalita.
 
 

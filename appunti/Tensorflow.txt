@@ -1,4 +1,4 @@
-tensorboard --logdir=unsup-<name>
+tensorboard --logdir=sup-<name>
 Vai a http://localhost:6006 nel tuo browser per vedere le visualizzazioni.
 
 

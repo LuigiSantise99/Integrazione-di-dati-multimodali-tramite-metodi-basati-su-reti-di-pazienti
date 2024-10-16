@@ -35,8 +35,6 @@ train:
 	1. inizializzazione delle variabili per l'addestramento (step totali, tempo medio e costo di validazione per epoca)
 	2. matrici di adiacenza impostate per allenamento e validazione
 	3. il dataset (minibatch) viene mescolato così vengono forniti in ordine casuale.
-	
-
 
 	4. Nel ciclo principale di addestramento (quindi per ogni minibatch):
 		viene estratto il prossimo minibatch e crea il dizionario feed_dict per passare i dati al modello
@@ -45,8 +43,6 @@ train:
 			model.opt_op: esegue un passo di ottimizzazione che minimizza la funzione di perdita. Come funziona? Dopo aver calcolato la loss, vengono calcolati i gradienti rispetto ai parametri del modello (compute_gradients() in supervised_models.py). Successivamente viene eseguito il gradient clipping (clipped_grads_and_vars), per far rimanere il gradient all'interno di un certo limite per evitare aggiornamenti drastici dei pesi, che potrebbero rovinare il training. Successivamente viene fatto un controllo se i gradienti sono None, cioè non esistono per alcune variabili. Il primo gradiente della lista viene quindi salvato su self.grad. Infine con self.opt_op, l'ottimizzatore usa i gradienti per aggiornare i parametri del modello e ridurre la funzione di perdita (eseguito da apply_gradients() dell'ottimizzatore).
 			model.loss: calcola la train loss per il batch attuale (spiegata giù)
 			model.preds: fornisce le predizioni del modello per il batch attuale. Come funziona? Le predizioni del modello vengono generate con la funzione self.predict(), che restituisce il risultato di una funzione di attivazione (nel nostro caso la sigmoid) applicata ai valori grezzi prodotti dal modello (cioè i self.node_preds).
-
-
 	
 	5. validazione: ogni x minibatch, viene eseguita una validazione (la x è impostata tramite la flag "validate_iter") 
 		matrice di adiacenza impostata
@@ -71,7 +67,7 @@ Metriche di addestramento (train)
 LOSS: calcolata quando procede con l'operazione sess.run e che include model.loss. Viene calcolata in due fasi principali:
 	1. Perdita dovuta alla regolarizzazione L2: aggiunge una componente di regolarizzazione al modello per prevenire l'overfitting, penalizzando i pesi di grande magnitudine. La regolarizzazione L2 viene applicata alle variabili (i pesi) degli aggregatori del modello e alle variabili (i pesi) utilizzati per la predizione finale. la l2_loss è il quadrato della norma L2 (somma dei quadrati dei valori del tensore) e viene moltiplicato per un fattore di regolarizzazione (un flag) che controlla quanto influisce la regolarizzazione nel calcolo della perdita complessiva.
 	2. Perdita di classificazione: 
-		a. per classificazione binaria  o multilabel (se sigmoid_loss è True), viene calcolata la perdita con tf.nn.sigmoid_cross_entropy_with_logits(logits, labels) (cross-entropy per ogni campione): logit  sono le uscite grezze del modello non ancora passate attraverso una funzione di attivazione (come la sigmoide che comprime i logits in un intervallo tra 0 e 1), le labels sono le etichette fornite dal placeholder. Infine con tf.reduce_mean() viene fatta la media  della perdita su tutti i campioni del minibatch.
+		a. per classificazione binaria  o multilabel (se sigmoid_loss è True), viene calcolata la perdita con tf.nn.sigmoid_cross_entropy_with_logits(logits, labels) (cross-entropy per ogni campione): logit sono le uscite grezze del modello non ancora passate attraverso una funzione di attivazione (come la sigmoide che comprime i logits in un intervallo tra 0 e 1), le labels sono le etichette fornite dal placeholder. Infine con tf.reduce_mean() viene fatta la media  della perdita su tutti i campioni del minibatch.
 		b. per classificazione multiclass: viene utilizzata la funzione softmax_cross_entropy_with_logits, che calcola la cross-entropy per la classificazione multiclasse. Le label rappresentano etichette reali, che sono fornite come one-hot. tf.reduce_mean(): La perdita di cross-entropy viene mediata su tutto il batch.
 
 	Infine viene aggiunto il valore corrente di self.loss ai log di TensorBoard, per monitorare l'andamento della perdita durante l'allenamento. Viene creato un riassunto scalare del valore self.loss, visualizzabile con TensorBoard.
@@ -108,7 +104,7 @@ softmax: È usata nei problemi di multi-class classification, dove ogni esempio 
 
 
 
-TRAINING: >80% dei nodi perchè viene poi suddiviso ancora per fare il test set
+TRAINING: 80% dei nodi, ma viene suddiviso ancora per fare il test set
 Fase in cui il modello impara dai dati (un sottoinsieme del dataset complessivo). Per ogni esempio di training, il modello fa una previsione, e questa viene confrontata con l’etichetta reale (vero valore).
 La loss calcolata indica quanto la previsione è lontana dal valore corretto.
 Il modello aggiusta i pesi con l'ottimizzatore Adam per minimizzare l'errore per esempi futuri.

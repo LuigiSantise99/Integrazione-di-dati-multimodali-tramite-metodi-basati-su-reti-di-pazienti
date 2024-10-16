@@ -59,7 +59,6 @@ def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_na
     return G
 
 def select_features(feats_data):
-
     # Seleziona le colonne categoriche
     categorical_columns = ["patientID", "years_to_birth", "gender", "ethnicity", 
                           "patient.age_at_initial_pathologic_diagnosis"]

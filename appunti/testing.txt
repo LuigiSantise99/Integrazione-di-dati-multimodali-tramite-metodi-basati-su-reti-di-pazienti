@@ -1,0 +1,306 @@
+addestramento modello con i seguenti dati: BLCA2, KIRC1, LUAD2, LUSC3, OV1, SKCM1.
+
+model: graphsage_mean
+nodi validation: 10%
+nodi training: 90% -> di cui il 25% sono per il test
+dropout = 0.1
+samples_3 = 25
+epoche = 10
+
+BLCA2 (ha tutte le features)
+	test_stats	loss=0.69413 f1_micro=0.55263 f1_macro=0.54762
+	val_stats	loss=0.70782 f1_micro=0.57971 f1_macro=0.57983 time=0.78857
+
+KIRC1 (ha tutte le features)
+	test_stats	loss=0.76855 f1_micro=0.65789 f1_macro=0.39683
+	val_stats	loss=0.55111 f1_micro=0.76471 f1_macro=0.43333 time=0.35120
+
+LUAD2 (come feature manca "ethnicity")
+	test_stats	loss=0.80729 f1_micro=0.55882 f1_macro=0.49605
+	val_stats	loss=0.70569 f1_micro=0.47458 f1_macro=0.45169 time=0.54686
+
+LUSC3 (come feature manca "ethnicity")
+	test_stats	loss=0.64293 f1_micro=0.60377 f1_macro=0.56347
+	val_stats	loss=0.72687 f1_micro=0.60000 f1_macro=0.59936 time=0.36475
+
+OV1 (come feature manca "ethnicity")
+	test_stats	loss=0.64818 f1_micro=0.59406 f1_macro=0.54917
+	val_stats	loss=0.60890 f1_micro=0.65217 f1_macro=0.39474 time=0.43785
+
+SKCM1 (ha tutte le features)
+	test_stats	loss=0.67037 f1_micro=0.62667 f1_macro=0.61111
+	val_stats	loss=0.59873 f1_micro=0.58824 f1_macro=0.58824 time=0.99086
+
+
+--------------------------------------------------------------------------------------
+model: graphsage_mean
+nodi validation: 20%
+nodi training: 80% -> di cui il 25% sono per il test
+dropout = 0.1
+samples_3 = 25
+epoche = 10
+
+BLCA2 (ha tutte le features)
+	test_stats	loss=0.69372 f1_micro=0.57143 f1_macro=0.56804
+	val_stats	loss=0.69623 f1_micro=0.62687 f1_macro=0.62553 time=1.54464
+
+KIRC1 (ha tutte le features)
+	test_stats	loss=0.49732 f1_micro=0.88235 f1_macro=0.46875
+	val_stats	loss=0.66878 f1_micro=0.70588 f1_macro=0.41379 time=0.79827
+
+LUAD2 (come feature manca "ethnicity")
+	test_stats	loss=0.71671 f1_micro=0.59504 f1_macro=0.53315
+	val_stats	loss=0.77149 f1_micro=0.42975 f1_macro=0.38636 time=1.10418 	//qua non migliora rispetto al precedente
+
+LUSC3 (come feature manca "ethnicity")
+	test_stats	loss=0.75484 f1_micro=0.47826 f1_macro=0.47727			//qua non migliora rispetto al precedente
+	val_stats	loss=0.62569 f1_micro=0.60870 f1_macro=0.56875 time=0.86736
+
+OV1 (come feature manca "ethnicity")
+	test_stats	loss=0.71985 f1_micro=0.50000 f1_macro=0.39746			//qua non migliora rispetto al precedente
+	val_stats	loss=0.64392 f1_micro=0.63636 f1_macro=0.56328 time=0.93532	//qua non migliora rispetto al precedente
+
+SKCM1 (ha tutte le features)
+	test_stats	loss=0.85165 f1_micro=0.47761 f1_macro=0.47574			//qua non migliora rispetto al precedente
+	val_stats	loss=0.70232 f1_micro=0.58209 f1_macro=0.57975 time=2.23643	//qua non migliora rispetto al precedente
+
+
+--------------------------------------------------------------------------------------
+model: graphsage_mean
+nodi validation: 20%
+nodi training: 80% -> di cui il 25% sono per il test
+dropout = 0
+samples_3 = 25
+epoche = 10
+
+BLCA2 (ha tutte le features)
+	test_stats	loss=0.67458 f1_micro=0.55639 f1_macro=0.54406	
+	val_stats	loss=0.59773 f1_micro=0.61654 f1_macro=0.61646 time=1.38999
+
+KIRC1 (ha tutte le features)
+	test_stats	loss=0.54967 f1_micro=0.78261 f1_macro=0.44262			//qua non migliora rispetto al precedente
+	val_stats	loss=0.58674 f1_micro=0.55882 f1_macro=0.48328 time=0.80650
+
+LUAD2 (come feature manca "ethnicity")
+	test_stats	loss=0.73758 f1_micro=0.57377 f1_macro=0.51641			//qua non migliora rispetto al precedente
+	val_stats	loss=0.81118 f1_micro=0.43333 f1_macro=0.37729 time=1.06628	
+
+LUSC3 (come feature manca "ethnicity")
+	test_stats	loss=0.80144 f1_micro=0.46809 f1_macro=0.46739			//qua non migliora rispetto al precedente
+	val_stats	loss=0.68850 f1_micro=0.60215 f1_macro=0.56301 time=1.17086	//qua non migliora rispetto al precedente
+
+OV1 (come feature manca "ethnicity")
+	test_stats	loss=0.70725 f1_micro=0.47191 f1_macro=0.38053			
+	val_stats	loss=0.64152 f1_micro=0.65934 f1_macro=0.59722 time=0.99326	
+
+SKCM1 (ha tutte le features)
+	test_stats	loss=0.79686 f1_micro=0.48120 f1_macro=0.47366			
+	val_stats	loss=0.75183 f1_micro=0.56716 f1_macro=0.56090 time=1.89951	//qua non migliora rispetto al precedente
+
+
+--------------------------------------------------------------------------------------
+model: gcn (Aggregatore basato su GCN) - È una scelta standard per grafi omogenei e può dare buoni risultati su piccoli dataset con nodi ben connessi, potrebbe essere sensibile alle impostazioni dell’hyperparameter, come il tasso di dropout e il peso di regolarizzazione.
+nodi validation: 20%
+nodi training: 80% -> di cui il 25% sono per il test
+dropout = 0.1
+samples_3 = 25
+epoche = 10
+
+BLCA2 (ha tutte le features)
+	test_stats	loss=0.66904 f1_micro=0.62687 f1_macro=0.38532	
+	val_stats	loss=0.69646 f1_micro=0.49254 f1_macro=0.33000 time=0.04780	//qua non migliora rispetto al precedente
+
+KIRC1 (ha tutte le features)
+	test_stats	loss=0.46093 f1_micro=0.88235 f1_macro=0.46875
+	val_stats	loss=0.59882 f1_micro=0.70588 f1_macro=0.41379 time=0.03174	
+
+LUAD2 (come feature manca "ethnicity")
+	test_stats	loss=0.69566 f1_micro=0.55000 f1_macro=0.35484
+	val_stats	loss=0.66504 f1_micro=0.61667 f1_macro=0.38144 time=0.04026
+
+LUSC3 (come feature manca "ethnicity")
+	test_stats	loss=0.69098 f1_micro=0.56522 f1_macro=0.36111
+	val_stats	loss=0.64252 f1_micro=0.69565 f1_macro=0.41026 time=0.03789
+
+OV1 (come feature manca "ethnicity")
+	test_stats	loss=0.62275 f1_micro=0.68889 f1_macro=0.40789			
+	val_stats	loss=0.64153 f1_micro=0.65217 f1_macro=0.39474 time=0.03154	
+
+SKCM1 (ha tutte le features)
+	test_stats	loss=0.70848 f1_micro=0.49254 f1_macro=0.33000			
+	val_stats	loss=0.66911 f1_micro=0.58209 f1_macro=0.36792 time=0.05361
+
+
+--------------------------------------------------------------------------------------
+model: graphsage_meanpool - Variante del max-pooling che usa la media invece del massimo, mantenendo la semplicità dell’aggregazione.
+nodi validation: 20%
+nodi training: 80% -> di cui il 25% sono per il test
+dropout = 0.1
+samples_3 = 25
+epoche = 10
+
+BLCA2 (ha tutte le features)
+	test_stats	loss=0.63105 f1_micro=0.62222 f1_macro=0.60494	
+	val_stats	loss=0.69724 f1_micro=0.61194 f1_macro=0.61185 time=0.13297
+
+KIRC1 (ha tutte le features)
+	test_stats	loss=0.49551 f1_micro=0.85294 f1_macro=0.46032			//qua non migliora rispetto al precedente
+	val_stats	loss=0.59729 f1_micro=0.65672 f1_macro=0.39286 time=0.06945	
+
+LUAD2 (come feature manca "ethnicity")
+	test_stats	loss=0.71631 f1_micro=0.55000 f1_macro=0.47248			//qua non migliora rispetto al precedente
+	val_stats	loss=0.73340 f1_micro=0.49587 f1_macro=0.41964 time=0.10949	//qua non migliora rispetto al precedente
+
+LUSC3 (come feature manca "ethnicity")
+	test_stats	loss=0.78477 f1_micro=0.50000 f1_macro=0.49786			//qua non migliora rispetto al precedente
+	val_stats	loss=0.65779 f1_micro=0.62366 f1_macro=0.59242 time=0.08154	//qua non migliora rispetto al precedente
+
+OV1 (come feature manca "ethnicity")
+	test_stats	loss=0.69470 f1_micro=0.55556 f1_macro=0.39840			//qua non migliora rispetto al precedente	
+	val_stats	loss=0.63806 f1_micro=0.70968 f1_macro=0.61413 time=0.09023	//qua non migliora rispetto al precedente
+
+SKCM1 (ha tutte le features)
+	test_stats	loss=0.75822 f1_micro=0.44776 f1_macro=0.44330			//qua non migliora rispetto al precedente
+	val_stats	loss=0.65173 f1_micro=0.53333 f1_macro=0.53297 time=0.17544
+
+
+--------------------------------------------------------------------------------------
+model: graphsage_mean
+nodi validation: 20%
+nodi training: 80% -> di cui il 25% sono per il test
+dropout = 0.1
+samples_3 = 0
+epoche = 10
+
+BLCA2 (ha tutte le features)
+	test_stats	loss=0.67564 f1_micro=0.51908 f1_macro=0.50242			//qua non migliora rispetto al precedente gcn
+	val_stats	loss=0.66691 f1_micro=0.58015 f1_macro=0.57976 time=0.04205
+
+KIRC1 (ha tutte le features)
+	test_stats	loss=0.45828 f1_micro=0.88235 f1_macro=0.46875
+	val_stats	loss=0.55230 f1_micro=0.70588 f1_macro=0.41379 time=0.02530	
+
+LUAD2 (come feature manca "ethnicity")	
+	test_stats	loss=0.72291 f1_micro=0.55738 f1_macro=0.43922			//qua non migliora rispetto al precedente gcn
+	val_stats	loss=0.73110 f1_micro=0.51200 f1_macro=0.39263 time=0.10798	//qua non migliora rispetto al precedente gcn
+
+LUSC3 (come feature manca "ethnicity")
+	test_stats	loss=0.74969 f1_micro=0.50000 f1_macro=0.49786			//qua non migliora rispetto al precedente gcn
+	val_stats	loss=0.65904 f1_micro=0.63830 f1_macro=0.61471 time=0.08725	//qua non migliora rispetto al precedente gcn
+
+OV1 (come feature manca "ethnicity")
+	test_stats	loss=0.66939 f1_micro=0.55556 f1_macro=0.39840			//qua non migliora rispetto al precedente gcn
+	val_stats	loss=0.62837 f1_micro=0.71739 f1_macro=0.62319 time=0.10885
+
+SKCM1 (ha tutte le features)
+	test_stats	loss=0.77299 f1_micro=0.43284 f1_macro=0.42658			//qua non migliora rispetto al precedente gcn
+	val_stats	loss=0.65301 f1_micro=0.55474 f1_macro=0.54870 time=0.15154
+
+
+--------------------------------------------------------------------------------------
+model: gcn
+nodi validation: 20%
+nodi training: 80% -> di cui il 25% sono per il test
+dropout = 0.1
+samples_3 = 0
+epoche = 10
+
+BLCA2 (ha tutte le features)
+	test_stats	loss=0.68644 f1_micro=0.62687 f1_macro=0.38532			//qua non migliora rispetto al precedente gcn (buono)
+	val_stats	loss=0.70345 f1_micro=0.49254 f1_macro=0.33000 time=0.04738	//qua non migliora rispetto al precedente gcn (buono)
+
+KIRC1 (ha tutte le features)	
+	test_stats	loss=0.52653 f1_micro=0.88235 f1_macro=0.46875			//qua non migliora rispetto al precedente gcn (buono)
+	val_stats	loss=0.52062 f1_micro=0.70588 f1_macro=0.41379 time=0.02716	
+
+LUAD2 (come feature manca "ethnicity")
+	test_stats	loss=0.69869 f1_micro=0.55000 f1_macro=0.35484
+	val_stats	loss=0.66584 f1_micro=0.61667 f1_macro=0.38144 time=0.03693
+
+LUSC3 (come feature manca "ethnicity")
+	test_stats	loss=0.68475 f1_micro=0.56522 f1_macro=0.36111
+	val_stats	loss=0.65715 f1_micro=0.69565 f1_macro=0.41026 time=0.03518	//qua non migliora rispetto al precedente gcn (buono)
+
+OV1 (come feature manca "ethnicity")
+	test_stats	loss=0.63769 f1_micro=0.68889 f1_macro=0.40789			//qua non migliora rispetto al precedente gcn (buono)
+	val_stats	loss=0.65476 f1_micro=0.65217 f1_macro=0.39474 time=0.05674	//qua non migliora rispetto al precedente gcn (buono)
+
+SKCM1 (ha tutte le features)
+	test_stats	loss=0.69895 f1_micro=0.49254 f1_macro=0.33000
+	val_stats	loss=0.67174 f1_micro=0.58209 f1_macro=0.36792 time=0.05354	//qua non migliora rispetto al precedente gcn (buono)
+
+
+--------------------------------------------------------------------------------------
+model: graphsage_maxpool
+nodi validation: 20%
+nodi training: 80% -> di cui il 25% sono per il test
+dropout = 0.1
+samples_3 = 25
+epoche = 10
+
+BLCA2 (ha tutte le features)
+	test_stats	loss=0.63923 f1_micro=0.63704 f1_macro=0.59868	
+	val_stats	loss=0.71616 f1_micro=0.54815 f1_macro=0.53992 time=0.14572	//qua non migliora rispetto al gcn (migliore)
+
+KIRC1 (ha tutte le features)
+	test_stats	loss=0.53708 f1_micro=0.88235 f1_macro=0.46875			//qua non migliora rispetto al gcn (migliore)
+	val_stats	loss=0.60110 f1_micro=0.70588 f1_macro=0.41379 time=0.07118	//qua non migliora rispetto al gcn (migliore)
+
+LUAD2 (come feature manca "ethnicity")
+	test_stats	loss=0.69610 f1_micro=0.55000 f1_macro=0.35484			
+	val_stats	loss=0.66730 f1_micro=0.61667 f1_macro=0.38144 time=0.12565	
+
+LUSC3 (come feature manca "ethnicity")
+	test_stats	loss=0.72059 f1_micro=0.50549 f1_macro=0.49951			//qua non migliora rispetto al gcn (migliore)
+	val_stats	loss=0.63780 f1_micro=0.62366 f1_macro=0.57941 time=0.07888	
+
+OV1 (come feature manca "ethnicity")
+	test_stats	loss=0.65715 f1_micro=0.68889 f1_macro=0.40789			//qua non migliora rispetto al gcn (migliore)
+	val_stats	loss=0.65623 f1_micro=0.65217 f1_macro=0.39474 time=0.09187	//qua non migliora rispetto al gcn (migliore)
+
+SKCM1 (ha tutte le features)
+	test_stats	loss=0.73378 f1_micro=0.41538 f1_macro=0.39815			//qua non migliora rispetto al gcn (migliore)
+	val_stats	loss=0.68519 f1_micro=0.53030 f1_macro=0.51134 time=0.27041	//qua non migliora rispetto al gcn (migliore)
+
+
+--------------------------------------------------------------------------------------
+model: graphsage_maxpool
+nodi validation: 20%
+nodi training: 80% -> di cui il 25% sono per il test
+dropout = 0.1
+samples_3 = 25
+epoche = 10
+weight_decay = 0.0001 (tutti quelli su è 0)
+
+BLCA2 (ha tutte le features)
+	test_stats	loss=0.63923 f1_micro=0.63704 f1_macro=0.59868	
+	val_stats	loss=0.71616 f1_micro=0.54815 f1_macro=0.53992 time=0.14572	//qua non migliora rispetto al gcn (migliore)
+
+KIRC1 (ha tutte le features)
+	test_stats	loss=0.53708 f1_micro=0.88235 f1_macro=0.46875			//qua non migliora rispetto al gcn (migliore)
+	val_stats	loss=0.60110 f1_micro=0.70588 f1_macro=0.41379 time=0.07118	//qua non migliora rispetto al gcn (migliore)
+
+LUAD2 (come feature manca "ethnicity")
+	test_stats	loss=0.69610 f1_micro=0.55000 f1_macro=0.35484			
+	val_stats	loss=0.66730 f1_micro=0.61667 f1_macro=0.38144 time=0.12565	
+
+LUSC3 (come feature manca "ethnicity")
+	test_stats	loss=0.72059 f1_micro=0.50549 f1_macro=0.49951			//qua non migliora rispetto al gcn (migliore)
+	val_stats	loss=0.63780 f1_micro=0.62366 f1_macro=0.57941 time=0.07888	
+
+OV1 (come feature manca "ethnicity")
+	test_stats	loss=0.65715 f1_micro=0.68889 f1_macro=0.40789			//qua non migliora rispetto al gcn (migliore)
+	val_stats	loss=0.65623 f1_micro=0.65217 f1_macro=0.39474 time=0.09187	//qua non migliora rispetto al gcn (migliore)
+
+SKCM1 (ha tutte le features)
+	test_stats	loss=0.73378 f1_micro=0.41538 f1_macro=0.39815			//qua non migliora rispetto al gcn (migliore)
+	val_stats	loss=0.68519 f1_micro=0.53030 f1_macro=0.51134 time=0.27041	//qua non migliora rispetto al gcn (migliore)
+
+
+
+PROBLEMI?
+Varietà delle feature
+La mancanza della feature “ethnicity” su alcuni tipi di dati potrebbe influenzare l’uniformità dei grafi. Potresti provare a riempire i valori mancanti per questa feature (ad esempio, con una media o una modalità), oppure sperimentare un addestramento con grafi che includono solo le feature comuni.
+
+Troncamento Methy
+Lavorando con l'intero file methy potremmo risolvere il problema andando a considerare tutti i dati disponibili.

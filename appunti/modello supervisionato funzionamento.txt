@@ -96,12 +96,12 @@ Metriche di validazione: calcolate all'interno delle funzioni incremental_evalua
 		viene usato calc_f1()
 		resituisce la media deli LOSS, f1 micro e macro e il tempo impegato
 
-
+(
 sigmoid: È usata nei problemi di multi-label classification, dove ogni esempio può appartenere a più di una classe. Ad esempio, un'immagine può essere etichettata sia come "gatto" che come "cane" contemporaneamente.
 
 softmax: È usata nei problemi di multi-class classification, dove ogni esempio può appartenere solo a una singola classe. Ad esempio, un'immagine può essere classificata come "gatto", "cane", o "uccello", ma solo una di queste.
-
-
+)
+^^^SBAGLIATO^^^
 
 
 TRAINING: 80% dei nodi, ma viene suddiviso ancora per fare il test set

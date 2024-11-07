@@ -14,12 +14,13 @@ import pandas as pd
 import json
 import os
 import csv
+import copy
 from networkx.readwrite import json_graph
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.impute import SimpleImputer
 
-cancer_type = 'PRAD1'
+cancer_type = 'BLCA2'
 os.makedirs('inputFilesGraphsage/{}'.format(cancer_type), exist_ok=True)
 log_dir = 'inputFilesGraphsage/{0}/{0}'.format(cancer_type)
 
@@ -46,17 +47,21 @@ def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_na
             if affinity_matrix[i, j] > 0:
                  G.add_edge(node_ids[i], node_ids[j], train_removed=False, test_removed=False)
 
-    # Dividi i nodi in training e validation set
-    train_nodes, val_nodes = train_test_split(list(G.nodes()), test_size=0.2, random_state=42)
-    for node in val_nodes:
-        G.node[node]['val'] = True
+    for i in range(10):
+        random_state=42+i
+        G_copy = copy.deepcopy(G)
 
-    # Dividi i nodi in training e test set
-    train_nodes, test_nodes = train_test_split(train_nodes, test_size=0.25, random_state=42)  # 0.25 * 0.8 = 0.2
-    for node in test_nodes:
-        G.node[node]['test'] = True
-    
-    return G
+        train_nodes, test_nodes = train_test_split(list(G_copy.nodes()), test_size=0.1, random_state=random_state) # 10% test set
+        for node in test_nodes:
+            G_copy.node[node]['test'] = True
+        
+        train_nodes, val_nodes = train_test_split(train_nodes, test_size=0.25, random_state=random_state) # 22,5% val set del db completo, train set 67,5% del db completo
+        for node in val_nodes:
+            G_copy.node[node]['val'] = True
+        
+        with open('inputFilesGraphsage/{0}/{0}-G{1}.json'.format(cancer_type, i), 'w') as f:
+            json.dump(json_graph.node_link_data(G_copy), f)
+        print('Grafo {} salvato come JSON'.format(i))
 
 def select_features(feats_data):
     # Seleziona le colonne categoriche
@@ -132,11 +137,11 @@ np.save('{}-feats.npy'.format(log_dir), encoded_features)
 np.savetxt('inputFilesGraphsage/feats_data.txt', encoded_features, delimiter=',')
 print('Matrice delle feature dei nodi salvata come .npy')
 
-# Salva il grafo (G) come JSON
-G = create_graph(affinity_matrix, class_map, encoded_features, patient_ids, feature_names)
-with open('{}-G.json'.format(log_dir), 'w') as f:
-    json.dump(json_graph.node_link_data(G), f)
-print('Grafo salvato come JSON')
+# Salva il grafo (G) come JSON (10 grafi diversi)
+create_graph(affinity_matrix, class_map, encoded_features, patient_ids, feature_names)
+# with open('{}-G.json'.format(log_dir), 'w') as f:
+#    json.dump(json_graph.node_link_data(G), f)
+# print('Grafo salvato come JSON')
 
 '''
 def check_features_for_id(node_id):
@@ -187,7 +192,7 @@ def check_features_for_id(node_id):
 node_id_to_check = "TCGA-BL-A13I"
 check_features_for_id(node_id_to_check)
 '''
-
+'''
 def check_all_features():
     all_match = True
 
@@ -215,8 +220,7 @@ def check_all_features():
         print("Almeno una feature non combacia.")
 
 check_all_features()
-
-
+'''
 
 '''
 # Carica il file .npy

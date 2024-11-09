@@ -31,7 +31,7 @@ def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_na
     if isinstance(feats_data, np.ndarray):
         feats_data_df = pd.DataFrame(feats_data, index=patient_ids, columns=feature_names)
     
-    feats_data_df.to_csv(os.path.join('inputFilesGraphsage/', 'feats_data_df.csv'), index=True)
+    # feats_data_df.to_csv(os.path.join('inputFilesGraphsage/', 'feats_data_df.csv'), index=True)
 
     # Aggiungi i nodi al grafo
     for node_id, death in node_data.items():
@@ -134,7 +134,7 @@ print('Classi dei nodi salvate come JSON')
 feats_data = pd.read_csv("dataset/clinical/{}_clinics.csv".format(cancer_type), sep=',')
 encoded_features, feature_names, patient_ids = select_features(feats_data)
 np.save('{}-feats.npy'.format(log_dir), encoded_features)
-np.savetxt('inputFilesGraphsage/feats_data.txt', encoded_features, delimiter=',')
+# np.savetxt('inputFilesGraphsage/feats_data.txt', encoded_features, delimiter=',')
 print('Matrice delle feature dei nodi salvata come .npy')
 
 # Salva il grafo (G) come JSON (10 grafi diversi)

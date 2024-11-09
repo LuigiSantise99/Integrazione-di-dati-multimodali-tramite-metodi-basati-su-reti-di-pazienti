@@ -1,0 +1,7 @@
+Ci permette di sapere quanto i valori di un insieme di dati si discostano dalla media dell'insieme stesso. Nel nostro caso è utile per capire la stabilità e la consistenza dei risultati ottenuti durante l'addestramento supervisionato. 
+
+[ho usato 10 grafi G, dove avvengono dei split-set differenti, per addestrare il modello con 10 combinazioni di set diversi]
+
+Deviazione standard bassa: i risultati sono concentrati vicino alla media -> il modello è stabile nei diversi esperimenti
+Deviazione standard alta: i risultati sono molto variabili -> il modello potrebbe non essere stabile o che i subset influiscono significativamente sui risultati
+

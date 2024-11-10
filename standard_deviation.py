@@ -3,10 +3,13 @@
 import re
 import numpy as np
 
+cancer_type = 'BLCA2'
+
 def extract_values(filename):
-    with open(filename, 'r') as file:
+    filepath = 'inputFilesGraphsage/stats/{0}_stats/{1}.txt'.format(cancer_type, filename)
+    with open(filepath, 'r') as file:
         content = file.read()
-        values = re.findall(r'[-+]?\d*\.\d+|\d+', content)
+        values = re.findall(r'\b\d+\.\d+\b', content)
         return list(map(float, values))
 
 def calculate_standard_deviation():
@@ -14,8 +17,11 @@ def calculate_standard_deviation():
     val_stats = []
 
     for i in range(10):
-        test_stats.append(extract_values(f'test_stats{i}'))
-        val_stats.append(extract_values(f'val_stats{i}'))
+        test_stats.append(extract_values('test_stats{}'.format(i)))
+        val_stats.append(extract_values('val_stats{}'.format(i)))
+
+    # print("Test stats: {}".format(test_stats))  # testing
+    # print("Validation stats: {}".format(val_stats))  # testing
 
     test_stats = np.array(test_stats)
     val_stats = np.array(val_stats)

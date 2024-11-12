@@ -15,16 +15,7 @@ creazione file json per input a graphsage.
 supervisionato, con quegli input
 stessa cosa aggiungendo le feature.
 
-tensorboard --logdir=unsup-<name>
-Vai a http://localhost:6006 nel tuo browser per vedere le visualizzazioni.
 
-in supervised-train ho impostato epoche a 100 (da 10) e sigmoide a true e learning_rate a 0.001 (da 0.01)(per ridurre la loss, funziona) -- riesco a ridurla solo andando ad alterare learning_rate, ma comunque rimane troppo alta, devo controllare che i dati in input siano giusti a questo punto. (ho provato anche a modificare il dropout e la weight_decay)
-
-todo. salvare in un file per ogni epoca le train loss e le val loss per convertirle in un grafico e capire se entrambe scendono. appena risalgono allora salvo l'epoca prima della risalita.
-
-
-to do: 
-sul git manca **MODIFICHE.md**
 
 
 

@@ -8,12 +8,12 @@ def visualize_graph(file_path, output_path):
     with open(file_path) as f:
         data = json.load(f)
         graph = json_graph.node_link_graph(data)
-
+    '''
     # Stampa informazioni sui nodi
     print("Nodi del grafo:")
     for node in graph.nodes(data=True):
         print(node)
-
+    '''
     # Disegna il grafo
     plt.figure(figsize=(20, 20))
     nx.draw(graph, with_labels=True, node_color='skyblue', node_size=700, edge_color='gray')
@@ -22,6 +22,7 @@ def visualize_graph(file_path, output_path):
     plt.savefig(output_path)
 
 if __name__ == "__main__":
-    file_path = 'inputFilesGraphsage/BLCA2/BLCA2-G0.json'
+    #file_path = 'inputFilesGraphsage/BLCA2/BLCA2-G0.json'
+    file_path = '../GraphSAGE/example_data/toy-ppi-G.json'
     output_path = 'output_graph.png'
     visualize_graph(file_path, output_path)

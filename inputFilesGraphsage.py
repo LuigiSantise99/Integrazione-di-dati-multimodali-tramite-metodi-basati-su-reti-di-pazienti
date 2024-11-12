@@ -55,7 +55,7 @@ def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_na
         for node in test_nodes:
             G_copy.node[node]['test'] = True
         
-        train_nodes, val_nodes = train_test_split(train_nodes, test_size=0.25, random_state=random_state) # 22,5% val set del db completo, train set 67,5% del db completo
+        train_nodes, val_nodes = train_test_split(train_nodes, test_size=0.25, random_state=random_state) # 22,5% val set del set completo, train set 67,5% del set completo
         for node in val_nodes:
             G_copy.node[node]['val'] = True
         

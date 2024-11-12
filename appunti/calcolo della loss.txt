@@ -35,7 +35,10 @@ Viene calcolata utilizzando le funzioni evaluate [riga 73 - supervised_train] e 
 
 ----------------------------------------------------------------------------------------------------------------------
 TEST
-Durante il test, la loss viene calcolata utilizzando la funzione incremental_evaluate con il parametro test=True [riga 327 - supervised_train]
+Durante il test, la loss viene calcolata utilizzando la funzione incremental_evaluate con il parametro test=True [riga 327 - supervised_train] (funzionamento incremental_evaluate vedi sopra). Anche in questo caso viene calcolata in modo incrementale per ogni batch e la loss finale è la media delle loss calcolate per ogni batch.
+
+
+
 
 
 

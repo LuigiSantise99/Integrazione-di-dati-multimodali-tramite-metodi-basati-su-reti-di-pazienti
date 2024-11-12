@@ -1,5 +1,13 @@
 Graphsage, supervised_train.
 
+BATCH
+un insieme di dati che vengono elaborati in un singolo passo di addestramento. Usando i batch si sfrutta l'efficienza computazionale delle operazioni vettoriali e permette di ridurre la varianza della stima del gradiente -> addestramento più stabile.
+
+MINIBATCH
+un sottoinsieme di un batch. L'addestramento avviene su questi minibatch ed è una via di mezzo tra l'addestramento che utilizza l'intero set di dati (batch) e l'addestramento che utilizza un singolo esempio alla volta. 
+Nel codice, il minibatch, viene creato con NodeMinibatchIterator [riga 139 - supervised_train.py] e con la funzione next_minibatch_feed_dict [riga 270] viene fornito il prossimo minibatch di dati con le etichette corrispondenti. 
+
+
 tf.app.run(): avvia l'esecuzione del programma tensorflow[v1.8] (costruisce un grafo computazionale) e procede con la funzione main(). Inoltre esegue il parsing degli argomenti.
 
 main: carica i dati di training (gestiti con FLAGS) e avvia l'addestramento (train()). 
@@ -97,19 +105,19 @@ Metriche di validazione: calcolate all'interno delle funzioni incremental_evalua
 		resituisce la media deli LOSS, f1 micro e macro e il tempo impegato
 
 
-TRAINING: 80% dei nodi, ma viene suddiviso ancora per fare il test set
+TRAINING
 Fase in cui il modello impara dai dati (un sottoinsieme del dataset complessivo). Per ogni esempio di training, il modello fa una previsione, e questa viene confrontata con l’etichetta reale (vero valore).
 La loss calcolata indica quanto la previsione è lontana dal valore corretto.
 Il modello aggiusta i pesi con l'ottimizzatore Adam per minimizzare l'errore per esempi futuri.
 Il processo viene ripetuto su tutti i dati di training per un certo numero di epoche (cicli completi attraverso l'intero dataset).
 L'obiettivo è fare in modo che il modello impari a fare buone previsioni sui dati di training, infatti man mano che il training prosegue, la loss dovrebbe diminuire, indicando che il modello sta imparando a minimizzare l'errore sui dati che ha visto finora.
 
-VALIDAZIONE: 20% dei nodi
+VALIDAZIONE
 Fase in cui misuriamo la performance del modello su un insieme di dati che non è utilizzato durante il training. Permette di valutare come il modello si comporta su dati che non ha mai visto.
 Viene eseguita periodicamente durante il training (ogni x minibatch). 
 L'obiettivo è prevenire l'overfitting (cioè quando il modello performa molto bene sui dati di training, ma male sui dati nuovi (validazione o test). E anche monitorare la generalizzazione, cioè quanto bene il modello generalizza i dati che non ha mai visto prima (minimizzare la loss).
 
-TEST: il 25% del train set (quindi il 20% dei nodi), il restante rimane come train set
+TEST
 Fase finale del ciclo di sviluppo di un modello che serve per valutare la performance finale del modello sui dati di test (diversi da quelli di training e di validazione). A differenza della fase di validazione, i dati di test non influenzano in alcun modo l'addestramento. Il risultato ottenuto sui dati di test rappresenta la misura finale della performance del modello.
 Nel codice la fase di test è gestita nella funzione incremental_evaluate con il parametro test=True, che viene eseguita dopo aver completato tutte le epoche di training e di validazione.
 La funzione incremental_evaluate valuta il modello in modo incrementale, batch per batch, fino a completare l'intero set di test.

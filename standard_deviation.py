@@ -20,9 +20,6 @@ def calculate_standard_deviation():
         test_stats.append(extract_values('test_stats{}'.format(i)))
         val_stats.append(extract_values('val_stats{}'.format(i)))
 
-    # print("Test stats: {}".format(test_stats))  # testing
-    # print("Validation stats: {}".format(val_stats))  # testing
-
     test_stats = np.array(test_stats)
     val_stats = np.array(val_stats)
 

@@ -35,7 +35,7 @@ def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_na
 
     # Aggiungi i nodi al grafo
     for node_id, death in node_data.items():
-        label = [1, 0] if death == 0 else [0, 1] # codifica one-hot
+        label = [1, 0] if death == 0 else [0, 1] # codifica one-hot (0 = [1, 0], 1 = [0, 1])
         features = feats_data_df.loc[node_id].tolist()
         G.add_node(node_id, label=label, features=features, val=False, test=False)
         
@@ -47,15 +47,21 @@ def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_na
             if affinity_matrix[i, j] > 0:
                  G.add_edge(node_ids[i], node_ids[j], train_removed=False, test_removed=False)
 
+    
+    one_hot_labels = [data['label'] for _, data in G.nodes(data=True)] # array delle etichette dei nodi in formato one-hot
+    labels = np.argmax(one_hot_labels, axis=1) # array delle etichette dei nodi in formato intero
+
     for i in range(10):
         random_state=42+i
         G_copy = copy.deepcopy(G)
 
-        train_nodes, test_nodes = train_test_split(list(G_copy.nodes()), test_size=0.1, random_state=random_state) # 10% test set
+        train_nodes, test_nodes = train_test_split(list(G_copy.nodes()), test_size=0.1, shuffle=True, stratify=labels, random_state=random_state) # 10% test set del set completo
         for node in test_nodes:
             G_copy.node[node]['test'] = True
-        
-        train_nodes, val_nodes = train_test_split(train_nodes, test_size=0.25, random_state=random_state) # 22,5% val set del set completo, train set 67,5% del set completo
+
+        train_labels = np.argmax([G_copy.node[node].get('label') for node in train_nodes], axis=1) # array delle etichette dei nodi di train in formato intero
+
+        train_nodes, val_nodes = train_test_split(train_nodes, test_size=0.25, shuffle=True, stratify=train_labels, random_state=random_state) # 22,5% val set del set completo, train set 67,5% del set completo
         for node in val_nodes:
             G_copy.node[node]['val'] = True
         

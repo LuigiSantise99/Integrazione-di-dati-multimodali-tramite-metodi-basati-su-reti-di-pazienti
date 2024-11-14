@@ -5,7 +5,7 @@ Viene calcolata all'interno del ciclo principale di addestramento [riga 268 - su
 - Costruzione del feed dictionary, per permettere il passaggio dei dati al modello [270-271]
 - Esecuzione del passo di training, con operazioni di ottimizzazione, calcolo della loss e predizione [riga 275]:
 
-	+ Funzione di loss: calcola la train loss per il batch attuale
+	+ Funzione di loss: calcola la train loss per il minibatch attuale
 	Procedimento [riga 102 - supervised_models.py]: composta da due parti principali. 
 	(1) Weight Decay Loss [riga 103]: aggiunge una componente di penalizzazione L2 per i pesi del modello per evitare overfitting. La penalizzazione viene applicata sia ai pesi (vars) degli aggregatori del modello, sia ai pesi (vars) utilizzati per la predizione finale. 
 	Il calcolo prevede la moltiplicazione di l2_loss, il quadrato della norma L2 (somma dei quadrati dei valori del tensore), per un fattore di regolarizzazione (FLAGS.weight_decay) che controlla quanto influisce la regolarizzazione nel calcolo della perdita complessiva [righe 106 e 108].

@@ -86,7 +86,7 @@ def select_features(feats_data):
     available_columns = list(set(categorical_columns).intersection(feats_data.columns))
 
     categorical_data = feats_data[available_columns]
-    print(categorical_data.head())
+    print(categorical_data.head()) # Stampa le prime righe del DataFrame considerando solo le colonne categoriche
     categorical_data.set_index('patientID', inplace=True)
     categorical_data = categorical_data.astype(str)
     #print(categorical_data)

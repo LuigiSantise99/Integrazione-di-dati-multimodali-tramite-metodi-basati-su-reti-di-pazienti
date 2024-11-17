@@ -1,0 +1,44 @@
++togliere i dati methy durante la realizzazione di snf
++vedere il funzionamento della funzione calculate_n_components di snf
+	-> prende il minore tra riga*proporzione e colonna*proporzione, quindi per RNASeq con una proporzione a 0.05 mi dava una dimensionalità troppo bassa quindi ho aumentato al 50%
+	shape attuali per BLCA2:
+	prima di RSVD (335, 470) (335, 12277) (335, 184)
+	dopo RSVD     (335, 66)  (335, 166)   (335, 35)
+
++stratificazione degli split in inputFiles
+	-> ho aggiunto i parametri shuffle e stratify, rispettivamente impostati a true e all'array che contiene tutte le etichette (che ho dovuto convertire in formato intero partendo da etichette one-hot, perchè la funzione non accettava le one-hot)
+	nel primo split si prende l'array di etichette di tutto il set
+	nel secondo split solo quello del training set
+
+vedere se funzion f1 senza quello che ha tolto la prof
+	->  visto che come parametro usiamo 'binary' c'è bisogno che le etichette one-hot encoded vengano convertite in etichette intere (1, 0). Ho quindi modificato l'intero script per far funzionare la funzione calc_f1 con un unico output.
+	PREDIZIONI TROPPO STRANE, CAPIRE COME VENGONO CALCOLATE E DOVE STA IL PROBLEMA: leggere GitHub Copilot
+
+
+aggiungere il calcolo delle nuove metriche:
+-recall
+-precision
+-specificity
+per poi usare  AUPRC(x=precision y=recall) e AUC(x=recall y=1-specificity): https://stats.stackexchange.com/questions/338826/auprc-vs-auc-roc e metriche per la claffificazione python (su google)
+
+fare primi grafici sulle metriche
+
+
+
+
+
+
+
+
+funzionamento aggregatori, riga 278 di models.py (ne parlo nel txt calcolo della loss)
+perchè i file sono solo val e test? per quanto riguarda il training? 
+vedere libreria add_edge e capire i parametri train_removed, test_removed
+
++vedere come escono i grafi visivamente (provare con un'altra env e quindi networkx aggiornato)
++capire anche perchè su G dell'example i links su train_removed e test_removed sono true mentre nei miei file tutti false -> perchè nessuno dei link è stato rimosso dal training set o dal test set
+
+aggiornare i requirements (graphsage-env)
+sul git manca **MODIFICHE.md**
+
+Nico: salvare in un file per ogni epoca le train loss e le val loss per convertirle in un grafico e capire se entrambe scendono. appena risalgono allora salvo l'epoca prima della risalita.
+

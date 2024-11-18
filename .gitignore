@@ -1,14 +1,19 @@
 __pycache__/
+
+# dataset
 dataset/
+
+# affinity matrix
 BLCA2/
-BRCA1/
-BRCA2/
 KIRC1/
 LUAD2/
 LUSC3/
 OV1/
-PRAD1/
 SKCM1/
+
+# output files (G, mapping, etc.)
 inputFilesGraphsage/
+
+# graph creation
 output_graph
 visualize_graph.py

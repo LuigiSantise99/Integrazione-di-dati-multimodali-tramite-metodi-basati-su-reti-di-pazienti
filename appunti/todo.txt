@@ -41,7 +41,7 @@ vedere libreria add_edge e capire i parametri train_removed, test_removed (credo
 +vedere come escono i grafi visivamente (provare con un'altra env e quindi networkx aggiornato)
 +capire anche perchè su G dell'example i links su train_removed e test_removed sono true mentre nei miei file tutti false -> perchè nessuno dei link è stato rimosso dal training set o dal test set
 
-sul git manca **MODIFICHE.md**
+sul git manca **MODIFICHE.md**, o comunque le modifiche al codice sia snf che graphsage
 
 Nico: salvare in un file per ogni epoca le train loss e le val loss per convertirle in un grafico e capire se entrambe scendono. appena risalgono allora salvo l'epoca prima della risalita.
 

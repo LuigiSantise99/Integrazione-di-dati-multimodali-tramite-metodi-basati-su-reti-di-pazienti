@@ -34,8 +34,8 @@ def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_na
     # feats_data_df.to_csv(os.path.join('inputFilesGraphsage/', 'feats_data_df.csv'), index=True)
 
     # Aggiungi i nodi al grafo
-    for node_id, death in node_data.items():
-        label = [1, 0] if death == 0 else [0, 1] # codifica one-hot (0 = [1, 0], 1 = [0, 1])
+    for node_id, label in node_data.items():
+        # label = [1, 0] if death == 0 else [0, 1] # codifica one-hot (0 = [1, 0], 1 = [0, 1])
         features = feats_data_df.loc[node_id].tolist()
         G.add_node(node_id, label=label, features=features, val=False, test=False)
         
@@ -125,12 +125,18 @@ with open("dataset/label/{}_os.csv".format(cancer_type), 'r', newline='') as csv
     for node_id in node_ids:
         labels.append(temp_map[node_id])
 
+# Identifica il numero di classi
+num_classes = len(set(labels))
+
+# Converti le etichette in formato one-hot
+labels_one_hot = np.eye(num_classes)[labels]
+
 id_map = {node_id: i for i, node_id in enumerate(node_ids)}
 with open('{}-id_map.json'.format(log_dir), 'w') as f:
     json.dump(id_map, f)
 print('Mappa degli ID dei nodi salvata come JSON')
 
-class_map = {node_id: label for node_id, label in zip(node_ids, labels)}
+class_map = {node_id: label.tolist() for node_id, label in zip(node_ids, labels_one_hot)}
 with open('{}-class_map.json'.format(log_dir), 'w') as f:
     json.dump(class_map, f)
 print('Classi dei nodi salvate come JSON')

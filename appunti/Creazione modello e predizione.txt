@@ -1,0 +1,12 @@
+Come viene creato un modello supervisionato e come vengono calcolate le predizioni
+
+[supervised_models.py]
+La classe SupervisedGraphsage mi permette di implementare GraphSAGE supervisionato con una serie di parametri e inizializzando  un modello generalizzato [models.py - riga 151] (modello che non è costruito da livelli tradizionali e sequenziali).
+Successivamente imposta il tipo di aggregatore e ottiene informazioni dai placeholders (nel dettaglio che informazioni?).
+Viene chiamata la funzione build [riga 78] che permette di costruire il grafo di TensorFlow per il modello:
+	+ vengono campionati i nodi e calcolata la dimensione di supporto [models.py - riga 254], inoltre aggrega le caratteristiche dei nodi campionati [models.py - riga 278].
+	+ gli outputs vengono normalizzati
+	+ viene definito il layer di predizione [layers.py - riga 73] e vengono calcolati i logits (node_preds)
+	+ con il metodo predict [riga 122] viene applicata la funzione di attivazione finale ai logits per ottenere le probabilità di classe.
+
+	

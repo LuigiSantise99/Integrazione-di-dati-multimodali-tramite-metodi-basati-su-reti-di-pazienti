@@ -10,29 +10,33 @@
 	nel primo split si prende l'array di etichette di tutto il set
 	nel secondo split solo quello del training set
 
-vedere se funzion f1 senza quello che ha tolto la prof
++vedere se funzion f1 senza quello che ha tolto la prof
 	->  visto che come parametro usiamo 'binary' c'è bisogno che le etichette one-hot encoded vengano convertite in etichette intere (1, 0). Ho quindi modificato l'intero script per far funzionare la funzione calc_f1 con un unico output.
-	PREDIZIONI TROPPO STRANE, CAPIRE COME VENGONO CALCOLATE E DOVE STA IL PROBLEMA: leggere GitHub Copilot
+	-> I logits vicini a 0 indicano che il modello non è sicuro delle sue predizioni, risultando in probabilità vicine a 0.5.
 
-
-aggiungere il calcolo delle nuove metriche:
++aggiungere il calcolo delle nuove metriche:
 -recall
 -precision
 -specificity
-per poi usare  AUPRC(x=precision y=recall) e AUC(x=recall y=1-specificity): https://stats.stackexchange.com/questions/338826/auprc-vs-auc-roc e metriche per la claffificazione python (su google)
+per poi usare  AUPRC(x=recall y=precision) e AUC(x=recall y=1-specificity): https://stats.stackexchange.com/questions/338826/auprc-vs-auc-roc e metriche per la claffificazione python (su google)
+X = FPR (1 - Specificity)
+Y = TPR (Recall)
 
 fare primi grafici sulle metriche
 
 
+ 
 
 
-
-
-
-
+vedere un po di teoria sulle nuove metriche
+scrivere della teoria su sigmoide e softmax (https://towardsdatascience.com/sigmoid-and-softmax-functions-in-5-minutes-f516c80ea1f9)
+models.py - riga 254 campionare
+models.py - riga 278 aggregare
+layers.py - riga 73 layer di predizione (ne parlo nel txt creazione modello e predizione)
+come avviene il calcolo della sigmoide (teoria)
 funzionamento aggregatori, riga 278 di models.py (ne parlo nel txt calcolo della loss)
 perchè i file sono solo val e test? per quanto riguarda il training? 
-vedere libreria add_edge e capire i parametri train_removed, test_removed
+vedere libreria add_edge e capire i parametri train_removed, test_removed (credo sia giusto che siano a false di base, se no ci diventerebbero perchè non servono gli archi)
 
 +vedere come escono i grafi visivamente (provare con un'altra env e quindi networkx aggiornato)
 +capire anche perchè su G dell'example i links su train_removed e test_removed sono true mentre nei miei file tutti false -> perchè nessuno dei link è stato rimosso dal training set o dal test set

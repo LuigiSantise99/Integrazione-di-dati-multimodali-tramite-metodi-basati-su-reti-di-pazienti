@@ -7,8 +7,8 @@ Questo repository contiene il progetto di tesi per il corso di laurea magistrale
 - **affinity_matrix.py**
 - **inputFilesGraphsage**
 - **variable_numbers**
-- **requirements_env1.txt**: File di requisiti per l'ambiente virtuale 1.
-- **requirements_env2.txt**: File di requisiti per l'ambiente virtuale 2.
+- **requirements_snf-env.txt**: File di requisiti per l'ambiente virtuale per usare SNF.
+- **requirements_graphsage-env.txt**: File di requisiti per l'ambiente virtuale per usare GraphSAGE.
 - **MODIFICHE.md**: Documentazione delle modifiche apportate alle librerie.
 
 ## Istruzioni
@@ -19,8 +19,8 @@ Questo repository contiene il progetto di tesi per il corso di laurea magistrale
 2. **Installare i Requisiti**:
 - Per l'ambiente che utilizza la libreria SNFpy:
    ```bash
-   pip install -r requirements_env1.txt
+   pip install -r requirements_snf-env.txt
    
 - Per l'ambiente che utilizza la libreria GraphSAGE (usa una versione più vecchi di Python):
    ```bash
-   pip install -r requirements_env2.txt
+   pip install -r requirements_graphsage-env.txt

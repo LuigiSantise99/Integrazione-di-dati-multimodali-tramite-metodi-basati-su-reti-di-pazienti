@@ -1,104 +1,32 @@
-# This file may be used to create an environment using:
-# $ conda create --name <env> --file <this file>
-# platform: linux-64
-_libgcc_mutex=0.1=main
-_openmp_mutex=5.1=1_gnu
-blas=1.0=mkl
-bottleneck=1.3.7=py312ha883a20_0
-brotli=1.0.9=h5eee18b_8
-brotli-bin=1.0.9=h5eee18b_8
-bzip2=1.0.8=h5eee18b_6
-ca-certificates=2024.7.2=h06a4308_0
-contourpy=1.2.0=py312hdb19cb5_0
-cycler=0.11.0=pyhd3eb1b0_0
-cyrus-sasl=2.1.28=h52b45da_1
-dbus=1.13.18=hb2f20db_0
-expat=2.6.2=h6a678d5_0
-fontconfig=2.14.1=h4c34cd2_2
-fonttools=4.51.0=py312h5eee18b_0
-freetype=2.12.1=h4a9f257_0
-glib=2.78.4=h6a678d5_0
-glib-tools=2.78.4=h6a678d5_0
-gst-plugins-base=1.14.1=h6a678d5_1
-gstreamer=1.14.1=h5eee18b_1
-icu=73.1=h6a678d5_0
-intel-openmp=2023.1.0=hdb19cb5_46306
-joblib=1.4.2=pypi_0
-jpeg=9e=h5eee18b_1
-kiwisolver=1.4.4=py312h6a678d5_0
-krb5=1.20.1=h143b758_1
-lcms2=2.12=h3be6417_0
-ld_impl_linux-64=2.38=h1181459_1
-lerc=3.0=h295c915_0
-libbrotlicommon=1.0.9=h5eee18b_8
-libbrotlidec=1.0.9=h5eee18b_8
-libbrotlienc=1.0.9=h5eee18b_8
-libclang=14.0.6=default_hc6dbbc7_1
-libclang13=14.0.6=default_he11475f_1
-libcups=2.4.2=h2d74bed_1
-libdeflate=1.17=h5eee18b_1
-libedit=3.1.20230828=h5eee18b_0
-libffi=3.4.4=h6a678d5_1
-libgcc-ng=11.2.0=h1234567_1
-libgfortran-ng=11.2.0=h00389a5_1
-libgfortran5=11.2.0=h1234567_1
-libglib=2.78.4=hdc74915_0
-libgomp=11.2.0=h1234567_1
-libiconv=1.16=h5eee18b_3
-libllvm14=14.0.6=hdb19cb5_3
-libpng=1.6.39=h5eee18b_0
-libpq=12.17=hdbd6064_0
-libstdcxx-ng=11.2.0=h1234567_1
-libtiff=4.5.1=h6a678d5_0
-libuuid=1.41.5=h5eee18b_0
-libwebp-base=1.3.2=h5eee18b_0
-libxcb=1.15=h7f8727e_0
-libxkbcommon=1.0.1=h5eee18b_1
-libxml2=2.10.4=hfdd30dd_2
-lz4-c=1.9.4=h6a678d5_1
-matplotlib=3.8.4=py312h06a4308_0
-matplotlib-base=3.8.4=py312h526ad5a_0
-mkl=2023.1.0=h213fc3f_46344
-mkl-service=2.4.0=py312h5eee18b_1
-mkl_fft=1.3.8=py312h5eee18b_0
-mkl_random=1.2.4=py312hdb19cb5_0
-mysql=5.7.24=h721c034_2
-ncurses=6.4=h6a678d5_0
-numexpr=2.8.7=py312hf827012_0
-numpy=1.26.4=py312hc5e2394_0
-numpy-base=1.26.4=py312h0da6c21_0
-openjpeg=2.4.0=h3ad879b_0
-openssl=3.0.15=h5eee18b_0
-packaging=23.2=py312h06a4308_0
-pandas=2.2.1=py312h526ad5a_0
-pcre2=10.42=hebb0a14_1
-pillow=10.3.0=py312h5eee18b_0
-pip=24.0=py312h06a4308_0
-ply=3.11=py312h06a4308_1
-pybind11-abi=5=hd3eb1b0_0
-pyparsing=3.0.9=py312h06a4308_0
-pyqt=5.15.10=py312h6a678d5_0
-pyqt5-sip=12.13.0=py312h5eee18b_0
-python=3.12.3=h996f2a0_1
-python-dateutil=2.9.0post0=py312h06a4308_0
-python-tzdata=2023.3=pyhd3eb1b0_0
-pytz=2024.1=py312h06a4308_0
-qt-main=5.15.2=h53bd1ea_10
-readline=8.2=h5eee18b_0
-scikit-learn=1.5.0=pypi_0
-scipy=1.13.0=py312hc5e2394_0
-setuptools=69.5.1=py312h06a4308_0
-sip=6.7.12=py312h6a678d5_0
-six=1.16.0=pyhd3eb1b0_1
-snfpy=0.2.2+0.gfd65e38.dirty=pypi_0
-sqlite=3.45.3=h5eee18b_0
-tbb=2021.8.0=hdb19cb5_0
-threadpoolctl=3.5.0=pypi_0
-tk=8.6.14=h39e8969_0
-tornado=6.3.3=py312h5eee18b_0
-tzdata=2024a=h04d1e81_0
-unicodedata2=15.1.0=py312h5eee18b_0
-wheel=0.43.0=py312h06a4308_0
-xz=5.4.6=h5eee18b_1
-zlib=1.2.13=h5eee18b_1
-zstd=1.5.5=hc292b87_2
+Bottleneck @ file:///croot/bottleneck_1709069899917/work
+contourpy @ file:///work/perseverance-python-buildout/croot/contourpy_1701756524386/work
+cycler @ file:///tmp/build/80754af9/cycler_1637851556182/work
+fonttools @ file:///croot/fonttools_1713551344105/work
+joblib==1.4.2
+kiwisolver @ file:///work/perseverance-python-buildout/croot/kiwisolver_1698847502605/work
+matplotlib @ file:///croot/matplotlib-suite_1713336378214/work
+mkl-fft @ file:///work/perseverance-python-buildout/croot/mkl_fft_1698845673361/work
+mkl-random @ file:///work/perseverance-python-buildout/croot/mkl_random_1698845720894/work
+mkl-service==2.4.0
+numexpr @ file:///work/perseverance-python-buildout/croot/numexpr_1698871031164/work
+numpy @ file:///croot/numpy_and_numpy_base_1708638617955/work/dist/numpy-1.26.4-cp312-cp312-linux_x86_64.whl#sha256=1d700f51d8b4fa684d858c9e3b56b1656bc5c82b6b79ff08d4e3b491c430059f
+packaging @ file:///croot/packaging_1710807400464/work
+pandas @ file:///croot/pandas_1709590491089/work/dist/pandas-2.2.1-cp312-cp312-linux_x86_64.whl#sha256=5802047a01a8af8f4a2d6aa0e3e9e6a659b7dcb47f027e62c94eab8c10d85ba7
+pillow @ file:///croot/pillow_1714398848491/work
+ply @ file:///work/perseverance-python-buildout/croot/ply_1698846188635/work
+pyparsing @ file:///work/perseverance-python-buildout/croot/pyparsing_1698847881454/work
+PyQt5==5.15.10
+PyQt5-sip @ file:///work/perseverance-python-buildout/croot/pyqt-split_1698847927472/work/pyqt_sip
+python-dateutil @ file:///croot/python-dateutil_1715108784345/work
+pytz @ file:///croot/pytz_1713974312559/work
+scikit-learn==1.5.0
+scipy @ file:///croot/scipy_1714069776893/work/dist/scipy-1.13.0-cp312-cp312-linux_x86_64.whl#sha256=36174fb5b942e39e4e12106540ad23beec20867e0991f2f0a890e68dcfdd80b4
+setuptools==69.5.1
+sip @ file:///work/perseverance-python-buildout/croot/sip_1698846977033/work
+six @ file:///tmp/build/80754af9/six_1644875935023/work
+snfpy==0.2.2+0.gfd65e38.dirty
+threadpoolctl==3.5.0
+tornado @ file:///work/perseverance-python-buildout/croot/tornado_1698866362018/work
+tzdata @ file:///croot/python-tzdata_1690578112552/work
+unicodedata2 @ file:///croot/unicodedata2_1713212950228/work
+wheel==0.43.0

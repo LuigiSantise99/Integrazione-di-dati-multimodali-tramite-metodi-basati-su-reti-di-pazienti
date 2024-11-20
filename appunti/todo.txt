@@ -23,7 +23,8 @@ X = FPR (1 - Specificity)
 Y = TPR (Recall)
 
 fare primi grafici sulle metriche
-
+	->capire la roba degli step e delle epoche, quanti step in ogni epoca? o comunque come funziona nel codice l'aumento di total step, di iter e di epoche
+	https://stackoverflow.com/questions/37146614/tensorboard-plot-training-and-validation-losses-on-the-same-graph
 
  
 
@@ -33,9 +34,7 @@ scrivere della teoria su sigmoide e softmax (https://towardsdatascience.com/sigm
 models.py - riga 254 campionare
 models.py - riga 278 aggregare
 layers.py - riga 73 layer di predizione (ne parlo nel txt creazione modello e predizione)
-come avviene il calcolo della sigmoide (teoria)
-funzionamento aggregatori, riga 278 di models.py (ne parlo nel txt calcolo della loss)
-perchè i file sono solo val e test? per quanto riguarda il training? 
+	funzionamento aggregatori, riga 278 di models.py (ne parlo nel txt calcolo della loss)
 vedere libreria add_edge e capire i parametri train_removed, test_removed (credo sia giusto che siano a false di base, se no ci diventerebbero perchè non servono gli archi)
 
 +vedere come escono i grafi visivamente (provare con un'altra env e quindi networkx aggiornato)

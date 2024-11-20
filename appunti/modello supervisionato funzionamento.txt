@@ -7,6 +7,20 @@ MINIBATCH
 un sottoinsieme di un batch. L'addestramento avviene su questi minibatch ed è una via di mezzo tra l'addestramento che utilizza l'intero set di dati (batch) e l'addestramento che utilizza un singolo esempio alla volta. 
 Nel codice, il minibatch, viene creato con NodeMinibatchIterator [riga 139 - supervised_train.py] e con la funzione next_minibatch_feed_dict [riga 270] viene fornito il prossimo minibatch di dati con le etichette corrispondenti. 
 
+EPOCA
+Un passaggio completo attraverso l'intero dataset di addestramento. Durante un'epoca, il modello vede ogni esempio di addestramento una volta. Se hai un dataset con 1000 esempi e imposti il numero di epoche a 10, il modello vedrà tutti i 1000 esempi 10 volte durante l'addestramento.
+
+STEP
+Rappresenta un singolo aggiornamento dei pesi del modello. Durante uno step, il modello elabora un batch di esempi di addestramento e aggiorna i suoi pesi in base alla funzione di perdita calcolata su quel batch. Il numero di step per epoca dipende dalla dimensione del batch e dalla dimensione del dataset. Ad esempio, se hai un dataset di 1000 esempi e un batch size di 100, ci saranno 10 step per epoca.
+
+
+
+
+
+
+
+
+
 
 tf.app.run(): avvia l'esecuzione del programma tensorflow[v1.8] (costruisce un grafo computazionale) e procede con la funzione main(). Inoltre esegue il parsing degli argomenti.
 

@@ -1,0 +1,6 @@
+Inizializzazione della sessione [riga 293 - supervised-train.py] specificando una configurazione [riga 287-290]
+Unione di tutti i sommari [riga 294] in un unico operatore (?).
+Creazione del FileWriter [riga 290] per scrivere i sommari su disco, specificando la directory e il grafo da visualizzare.
+
+scalar in supervised_models.py per la loss
+scalar delle altre metriche in supervised-train.py

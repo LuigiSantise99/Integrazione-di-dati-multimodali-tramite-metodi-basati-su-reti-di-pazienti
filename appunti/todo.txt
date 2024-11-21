@@ -1,4 +1,23 @@
+nuovo dataset: leggere paper e scaricare i nuovi dataset per l'addestramento del modello https://academic.oup.com/bioinformatics/article/40/9/btae523/7739700 
+https://github.com/biomedicalinformaticsgroup/MOGDx/blob/main/R/data_download.R
+
+
+
+
+vedere un po di teoria sulle nuove metriche
+scrivere della teoria su sigmoide e softmax (https://towardsdatascience.com/sigmoid-and-softmax-functions-in-5-minutes-f516c80ea1f9)
+models.py - riga 254 campionare
+models.py - riga 278 aggregare
+layers.py - riga 73 layer di predizione (ne parlo nel txt creazione modello e predizione)
+	funzionamento aggregatori, riga 278 di models.py (ne parlo nel txt calcolo della loss)
+
+
+
+
+
+
 +togliere i dati methy durante la realizzazione di snf
+
 +vedere il funzionamento della funzione calculate_n_components di snf
 	-> prende il minore tra riga*proporzione e colonna*proporzione, quindi per RNASeq con una proporzione a 0.05 mi dava una dimensionalità troppo bassa quindi ho aumentato al 50%
 	shape attuali per BLCA2:
@@ -10,7 +29,7 @@
 	nel primo split si prende l'array di etichette di tutto il set
 	nel secondo split solo quello del training set
 
-+vedere se funzion f1 senza quello che ha tolto la prof
++modifica f1: ritorna solo un valore
 	->  visto che come parametro usiamo 'binary' c'è bisogno che le etichette one-hot encoded vengano convertite in etichette intere (1, 0). Ho quindi modificato l'intero script per far funzionare la funzione calc_f1 con un unico output.
 	-> I logits vicini a 0 indicano che il modello non è sicuro delle sue predizioni, risultando in probabilità vicine a 0.5.
 
@@ -22,22 +41,12 @@ per poi usare  AUPRC(x=recall y=precision) e AUC(x=recall y=1-specificity): http
 X = FPR (1 - Specificity)
 Y = TPR (Recall)
 
-fare primi grafici sulle metriche
-	->capire la roba degli step e delle epoche, quanti step in ogni epoca? o comunque come funziona nel codice l'aumento di total step, di iter e di epoche
-	https://stackoverflow.com/questions/37146614/tensorboard-plot-training-and-validation-losses-on-the-same-graph
-
- 
++fare primi grafici sulle metriche
+	-> ora posso visualizzare l'andamento di tutte le metriche che il modello calcola, sia per la fase di training che per la fase di validation
+	i grafi è meglio per ogni epoca o per ogni step, non sapendo però in che epoca ci troviamo
 
 
-vedere un po di teoria sulle nuove metriche
-scrivere della teoria su sigmoide e softmax (https://towardsdatascience.com/sigmoid-and-softmax-functions-in-5-minutes-f516c80ea1f9)
-models.py - riga 254 campionare
-models.py - riga 278 aggregare
-layers.py - riga 73 layer di predizione (ne parlo nel txt creazione modello e predizione)
-	funzionamento aggregatori, riga 278 di models.py (ne parlo nel txt calcolo della loss)
-vedere libreria add_edge e capire i parametri train_removed, test_removed (credo sia giusto che siano a false di base, se no ci diventerebbero perchè non servono gli archi)
-
-+vedere come escono i grafi visivamente (provare con un'altra env e quindi networkx aggiornato)
++vedere come escono i grafi visivamente (provare con un'altra env e quindi networkx aggiornato) -> escondo solo nodi attorno al nodo centrale
 +capire anche perchè su G dell'example i links su train_removed e test_removed sono true mentre nei miei file tutti false -> perchè nessuno dei link è stato rimosso dal training set o dal test set
 
 sul git manca **MODIFICHE.md**, o comunque le modifiche al codice sia snf che graphsage

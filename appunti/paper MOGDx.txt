@@ -1,0 +1,7 @@
+Introduzione
+Multi-Omic Graph Diagnosis (MOGDx), strumento flessibile per l'integrazione di dati multi-omici per eseguire attività di classificazione per malattie eterogenee.
+Integra le modalità in una singola rete di similarità dei pazienti (PSN) utilizzando l'algoritmo Similarity Network Fusion (SNF).
+MOGDx codifica le modalità utilizzando un Mulit-Modal Encoder (MME) ed esegue la classificazione dei pazienti utilizzando un GCN. La backpropagation viene eseguita congiuntamente tramite GCN e MME creando una pipeline di addestramento completamente supervisionata, denominata Graph Convolutional Network with Multi-Modal Encoder (GCN-MME).
+MOGDx è il primo strumento del suo genere in grado di gestire i dati mancanti dei pazienti ed è stato specificamente progettato per integrare qualsiasi numero di modalità dati o misure omiche.
+
+Pipeline di MOGDx

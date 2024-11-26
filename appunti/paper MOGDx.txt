@@ -5,3 +5,5 @@ MOGDx codifica le modalità utilizzando un Mulit-Modal Encoder (MME) ed esegue l
 MOGDx è il primo strumento del suo genere in grado di gestire i dati mancanti dei pazienti ed è stato specificamente progettato per integrare qualsiasi numero di modalità dati o misure omiche.
 
 Pipeline di MOGDx
+I dati grezzi vengono elaborati in matrici, con ogni riga corrispondente a un paziente e ogni colonna corrispondente a una caratteristica di quella misura.
+Viene calcolata la similarità tra i pazienti in ogni modalità, per la selezione delle caratteristiche. Tutti i pazienti invece vengono inclusi nella rete, con etichette di training, convalida e test create durante la fase di training del GCN-MME.

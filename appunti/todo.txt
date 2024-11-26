@@ -1,7 +1,7 @@
 nuovo dataset: leggere paper e scaricare i nuovi dataset per l'addestramento del modello https://academic.oup.com/bioinformatics/article/40/9/btae523/7739700 
 https://github.com/biomedicalinformaticsgroup/MOGDx/blob/main/R/data_download.R
 
-
+parlare con la prof per capire come gestire il fatto che nei dati mancano delle viste comuni, nel senso magari una vista è presente in un pacchetto ma non lo è in un altro pacchetto (capire bene autonomamente prima cosa vuole dire tecnicamente)
 
 
 vedere un po di teoria sulle nuove metriche
@@ -15,24 +15,26 @@ layers.py - riga 73 layer di predizione (ne parlo nel txt creazione modello e pr
 
 
 
+sul git manca **MODIFICHE.md**, o comunque le modifiche al codice sia snf che graphsage
+
+Nico: salvare in un file per ogni epoca le train loss e le val loss per convertirle in un grafico e capire se entrambe scendono. appena risalgono allora salvo l'epoca prima della risalita.
+
+
+
 
 +togliere i dati methy durante la realizzazione di snf
-
 +vedere il funzionamento della funzione calculate_n_components di snf
 	-> prende il minore tra riga*proporzione e colonna*proporzione, quindi per RNASeq con una proporzione a 0.05 mi dava una dimensionalità troppo bassa quindi ho aumentato al 50%
 	shape attuali per BLCA2:
 	prima di RSVD (335, 470) (335, 12277) (335, 184)
 	dopo RSVD     (335, 66)  (335, 166)   (335, 35)
-
 +stratificazione degli split in inputFiles
 	-> ho aggiunto i parametri shuffle e stratify, rispettivamente impostati a true e all'array che contiene tutte le etichette (che ho dovuto convertire in formato intero partendo da etichette one-hot, perchè la funzione non accettava le one-hot)
 	nel primo split si prende l'array di etichette di tutto il set
 	nel secondo split solo quello del training set
-
 +modifica f1: ritorna solo un valore
 	->  visto che come parametro usiamo 'binary' c'è bisogno che le etichette one-hot encoded vengano convertite in etichette intere (1, 0). Ho quindi modificato l'intero script per far funzionare la funzione calc_f1 con un unico output.
 	-> I logits vicini a 0 indicano che il modello non è sicuro delle sue predizioni, risultando in probabilità vicine a 0.5.
-
 +aggiungere il calcolo delle nuove metriche:
 -recall
 -precision
@@ -40,7 +42,6 @@ layers.py - riga 73 layer di predizione (ne parlo nel txt creazione modello e pr
 per poi usare  AUPRC(x=recall y=precision) e AUC(x=recall y=1-specificity): https://stats.stackexchange.com/questions/338826/auprc-vs-auc-roc e metriche per la claffificazione python (su google)
 X = FPR (1 - Specificity)
 Y = TPR (Recall)
-
 +fare primi grafici sulle metriche
 	-> ora posso visualizzare l'andamento di tutte le metriche che il modello calcola, sia per la fase di training che per la fase di validation
 	i grafi è meglio per ogni epoca o per ogni step, non sapendo però in che epoca ci troviamo
@@ -48,8 +49,4 @@ Y = TPR (Recall)
 
 +vedere come escono i grafi visivamente (provare con un'altra env e quindi networkx aggiornato) -> escondo solo nodi attorno al nodo centrale
 +capire anche perchè su G dell'example i links su train_removed e test_removed sono true mentre nei miei file tutti false -> perchè nessuno dei link è stato rimosso dal training set o dal test set
-
-sul git manca **MODIFICHE.md**, o comunque le modifiche al codice sia snf che graphsage
-
-Nico: salvare in un file per ogni epoca le train loss e le val loss per convertirle in un grafico e capire se entrambe scendono. appena risalgono allora salvo l'epoca prima della risalita.
 

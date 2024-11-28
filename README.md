@@ -21,6 +21,6 @@ Questo repository contiene il progetto di tesi per il corso di laurea magistrale
    ```bash
    pip install -r requirements_snf-env.txt
    
-- Per l'ambiente che utilizza la libreria GraphSAGE (usa una versione più vecchi di Python):
+- Per l'ambiente che utilizza la libreria GraphSAGE (usa una versione più vecchia di Python):
    ```bash
    pip install -r requirements_graphsage-env.txt

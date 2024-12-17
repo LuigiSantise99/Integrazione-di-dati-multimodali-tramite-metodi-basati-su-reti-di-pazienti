@@ -1,0 +1,30 @@
+pre-processing, knn e snf (R)
+
+pre-processing
+pre-elaborazione dei diversi tipi di dati genomici (mRNA, miRNA, DNAm, RPPA, CNV). 
+Prima di tutto viene generato il file META, da usare nella pre-elaborazione di ogni tipo di dato genomico. Questo file contiene dati genomici in base alle caratteristiche cliniche e demografiche dei pazienti, ogni riga rappresenta un campione, ogni colonna contiene informazioni specifiche su quel campione (note: "paper_Grade": Grado del tumore, che indica la gravità o l'avanzamento del tumore (ad esempio, "G2", "G3")). I metadati vengono estratti, puliti e salvati in un file csv (datMeta.csv).
+A questo punto per ogni tipo di dato genomico: vengono caricati i dati corrispondenti e i metadati, vengono filtrati e allineati e prima di salvare i risultati viene eseguita un'analisi in base al tipo di dato che stiamo considerando (mRNA e miRNA: analisi dell'espressione differenziale, DNAm: analisi delle varianti CpG, RPPA: analisi delle proteine, CNV: analisi delle varianti CNV).
+
+cvTrait -> Funzione utilizzata per il preprocessing di DNAm, RPPA, CNV. Rimuove prima di tutto le righe con valori mancanti per il tratto specificato (trait), permette quindi di eseguire una regressione LASSO (Least Absolute Shrinkage and Selection Operator) utilizzando la cross-validation per identificare le caratteristiche associate a un tratto fenotipico specifico. Con la regressione LASSO si intende ridurre gli errori causati dall'overfitting dei dati di addestramento.
+
+diff_expr -> Funzione utilizzata per il preprocessing di mRNA e miRNA. Rimuove e filtra (se è miRNA) i geni in base all'espressione, rimuove gli outlier in base alla connettività, normalizzazione e trasformazione VST, identificazione dei geni differenzialmente espressi. Restituisce i dati di espressione trasformati, i metadati trasformati e i top geni.
+
+
+KNN
+vengono generati grafi k-nearest neighbors (KNN) per diversi tipi di dati genomici (modalità).
+Con un loop si passa ai diversi tipi di dati genomici, caricando l'RData processato della modalità corrente.
+Il grafo KNN viene generato in base alla modalità corrente utilizzando la funzione expr.to.graph, utilizzando top_genes per miRNA e mRNA, cpg_sites per DNAm, applicando una transformazione logaritmica ai dati e utilizzando cns_sites per CNV e utilizzando protein_sites per RPPA.
+Vengono salvati il grafo KNN, i dati di espressione datExpr e i metadati datMeta, per ogni modalità.
+
+expr.to.graph -> Banalmente costruisce il grafo k-nearest neighbors (KNN) partendo da tutti i dati del caso. Se è mRNA o miRNA, seleziona i geni di interesse dalla matrice di espressione, altrimenti trasforma la matrice di espressione selezionando i geni di interesse per il tratto specifico. Viene calcolata la matrice di correlazione in base alla modalità. Crea il grafo con la funzione make.knn.graph. Il grafo verrà semplificando rimuovendo gli elementi che non servono (loop, vertici senza archi, archi multipli)
+
+
+SNF
+Viene utilizzata la Similarity Network Fusion per combinare diverse modalità di dati genomici e generare grafi di similarità. In una lista inizialmente vuota vengono aggiunte tutte le combinazioni possibili di modalità (da 2 a tutte le modalità, la singola modalità è generata già da KNN).
+Quindi per ogni elemento della lista, vengono combinati i metadati delle modalità che fanno parte dell'elemento in questione. Vengono rimossi i duplicati e i nomi delle righe dei metadati vengono impostati come indice del paziente.
+Vengono caricati i grafi di similarità per le modalità nella combinazione corrente e per ognuna di esse vengono costruiti i grafi con la libreria igraph, per memorizzarli poi in una lista di grafi. Inoltre memorizza tutti gli identificatori unici dei pazienti.
+Per ogni grafo nella lista appena salvata, vengono aggiunti i nodi mancanti e costruita la matrice di adiacenza, per poi memorizzarla in un dizionario.
+Le matrici di adiacenza appena salvate vengono usate come parametri in SNF per la fusione delle reti di similarità, insieme a K (numero di vicini) e T (numero di iterazioni). Si ottiene quindi la matrice di similarità combinata W che viene successivamente convertita in un grafo utilizzando snf.to.graph, per poi salvarlo.
+
+snf.to.graph -> costruisce un grafo KNN (con make.knn.graph) basato sulla matrice di similarità. Il grafo verrà semplificato rimuovendo elementi che non servono (archi multipli, loop, vertici senza archi)
+

@@ -7,3 +7,8 @@ MOGDx è il primo strumento del suo genere in grado di gestire i dati mancanti d
 Pipeline di MOGDx
 I dati grezzi vengono elaborati in matrici, con ogni riga corrispondente a un paziente e ogni colonna corrispondente a una caratteristica di quella misura.
 Viene calcolata la similarità tra i pazienti in ogni modalità, per la selezione delle caratteristiche. Tutti i pazienti invece vengono inclusi nella rete, con etichette di training, convalida e test create durante la fase di training del GCN-MME.
+
+
+
+
+data download: sto scaricando dei file dal dataset. ogni file rappresenta un campione analizzato in uno specifico modo. quindi file > campioni rappresentati nella tabella

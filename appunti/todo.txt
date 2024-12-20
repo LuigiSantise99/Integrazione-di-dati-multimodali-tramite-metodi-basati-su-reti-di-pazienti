@@ -50,3 +50,51 @@ Y = TPR (Recall)
 +vedere come escono i grafi visivamente (provare con un'altra env e quindi networkx aggiornato) -> escondo solo nodi attorno al nodo centrale
 +capire anche perchè su G dell'example i links su train_removed e test_removed sono true mentre nei miei file tutti false -> perchè nessuno dei link è stato rimosso dal training set o dal test set
 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+scaricarare il dataset brca +
+
+preprocessing di brca +
+	cambiare informazioni cliniche da visualizzare (per i fenotipi? che indicano quali campioni rimuovere in base alle informazioni mancanti) +
+							(fenotipi lasciati uguali all'originale)
+	aggiungere seed 42 alla funzione cvTrait (dentro la funzione in preprocess_function) +
+	knn +
+	controllare sia il numero di pazienti che le features +
+		il numero di features dei processati controllate aprendo il file Rdata su R (con load()) e per mRNA e miRNA controllare il numero di righe di datExp, per le altre il numero di colonne. Il numero di features degli estratti e il numero dei pazienti controllare la matrice (n x m) che esce fuori con knn, n->n_feature m->n_pazienti
+
+poi usare i datexpr nel mio snf, delle omiche usate nella tabella del paper (quella evidenziata)
+	
+	
+
+leggere paper di MOGONET e MoGCN: controllare se i risultati sono gli stessi o quelli di mogdx li hanno fatti rigirare (tabella 2)
+
+label: paper grade (per lgg, invece per brca è l'altro mi pare quello con 50)
+
+dati clinici: 
+
+preprocessing: dat expr vanno presi solo i top genes
+
+
+******************mandare email all prof casiraghi per capire se la laurea a febbraio è possibile
+
+
+riordinare appunti in ordine di creazione - aggiungere numerino tipo capitoli
+cambiare i requirements su github
+sul git manca **MODIFICHE.md**, o comunque le modifiche al codice sia snf che graphsage
+	snf: cercare 'modifiche' sul file versioneer.py
+
+
+
+
+
+righe x colonne
+miRNA: features x pazienti DA TRASPORRE
+DNAm: pazienti x features
+mRNA: features x pazienti DA TRASPORRE
+
+devo estrapolare i topgenes (indici) dai dataexpr per poi usare snf. il numero di topgeni sono le feature estratte, il numero di righe di dataexpr sono invece le feature processate (per i mirNA, per dnam è il contrario). quindi l'idea è transporre le matrici che vanno transposte, andare a filtrare solo le features indicate dagli indici di topgene e poi usare snf. 
+	problemi: se faccio una transposta, l'indice cambia? soluzione: per andare sul sicuro posso prima filtrare i topgene, per poi transporre la matrice
+capire anche perchè nella shape le colonne vanno a +1, mentre le righe no
+
+se uso già i topgeni, inutile fare rsvd?
+

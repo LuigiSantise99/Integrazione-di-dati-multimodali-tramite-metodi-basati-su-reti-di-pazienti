@@ -17,10 +17,3 @@ Questo repository contiene il progetto di tesi per il corso di laurea magistrale
    git clone https://github.com/tuo-username/tesi-progetto.git
    
 2. **Installare i Requisiti**:
-- Per l'ambiente che utilizza la libreria SNFpy:
-   ```bash
-   pip install -r requirements_snf-env.txt
-   
-- Per l'ambiente che utilizza la libreria GraphSAGE (usa una versione più vecchia di Python):
-   ```bash
-   pip install -r requirements_graphsage-env.txt

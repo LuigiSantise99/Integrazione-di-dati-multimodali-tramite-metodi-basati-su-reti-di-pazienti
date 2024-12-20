@@ -17,3 +17,6 @@ Questo repository contiene il progetto di tesi per il corso di laurea magistrale
    git clone https://github.com/tuo-username/tesi-progetto.git
    
 2. **Installare i Requisiti**:
+
+
+## Modifiche

@@ -7,17 +7,50 @@ from sklearn.utils.extmath import randomized_svd
 
 tcga_project = 'BRCA'
 
-# Caricamento dei dati di espressione (datExpr_<omics>)
-datExpr_DNAm = f"../MOGDx/data/TCGA/{tcga_project}/raw/datExpr_DNAm.csv"
+# Caricamento dei dati di espressione (datExpr_miRNA)
 datExpr_miRNA = f"../MOGDx/data/TCGA/{tcga_project}/raw/datExpr_miRNA.csv"
-datExpr_mRNA = f"../MOGDx/data/TCGA/{tcga_project}/raw/datExpr_mRNA.csv"
+df_miRNA = pd.read_csv(datExpr_miRNA, index_col=0)
 
-df_DNAm = pd.read_csv(datExpr_DNAm)
-df_miRNA = pd.read_csv(datExpr_miRNA)
-df_mRNA = pd.read_csv(datExpr_mRNA)
+# Carica gli indici dei geni da R e converti a base-0
+top_genes = np.loadtxt(f"../MOGDx/data/TCGA/{tcga_project}/raw/top_genes.txt", dtype=int) - 1
 
+# Filtra il dataframe mantenendo solo le righe corrispondenti agli indici
+filtered_df = df_miRNA.iloc[top_genes, :]
+
+# Verifica la dimensione del dataframe filtrato e del numero di indici
 print("Shape prima di RSVD:")
-print(df_DNAm.shape, df_miRNA.shape, df_mRNA.shape)
+print(filtered_df.shape)
+print(f"Numero di indici nel file top_genes.txt: {len(top_genes)}")
+print(f"Numero di righe nel dataframe filtrato: {filtered_df.shape[0]}")
+
+# Controlla i nomi dei geni selezionati
+selected_genes = df_miRNA.index[top_genes]
+print("Ecco alcuni dei geni selezionati:")
+print(selected_genes[:10])  # Mostra i primi 10 geni selezionati
+
+# Confronta con i valori del file top_genes.txt
+with open(f"../MOGDx/data/TCGA/{tcga_project}/raw/top_genes.txt", 'r') as f:
+    top_genes_in_file = f.readlines()
+
+# Rimuovi spazi bianchi e converte gli indici in base-1 (per il confronto con il file R)
+top_genes_in_file = [str(int(gene.strip()) + 1) for gene in top_genes_in_file]  # Converte a base-1
+
+# Verifica che i primi 10 geni nel file siano gli stessi estratti
+print("Confronto dei primi 10 geni (base-1):")
+print(top_genes_in_file[:10])
+print("Confronto con i geni selezionati (base-1):")
+print(selected_genes[:10])
+
+# Verifica se c'è qualche differenza tra i geni estratti e quelli nel file
+matching_genes = np.isin(selected_genes, top_genes_in_file)
+print("Verifica della corrispondenza tra i geni selezionati e quelli nel file:")
+print(f"Tutti i geni selezionati corrispondono ai geni nel file: {matching_genes.all()}")
+
+# Salvataggio del dataframe filtrato per una verifica visiva
+filtered_df.to_csv(f"filtered_miRNA_{tcga_project}.csv")
+print("File CSV dei top genes salvato come 'filtered_miRNA_{tcga_project}.csv'")
+
+# print(df_DNAm.shape, df_miRNA.shape, df_mRNA.shape)
 
 # def calculate_n_components(df, proportion=1):
 #     """

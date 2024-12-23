@@ -7,50 +7,42 @@ from sklearn.utils.extmath import randomized_svd
 
 tcga_project = 'BRCA'
 
-# Caricamento dei dati di espressione (datExpr_miRNA)
+# Caricamento dei dati di espressione (datExpr_<omics>)
+print("Loading data...")
+datExpr_DNAm = f"../MOGDx/data/TCGA/{tcga_project}/raw/datExpr_DNAm.csv"
 datExpr_miRNA = f"../MOGDx/data/TCGA/{tcga_project}/raw/datExpr_miRNA.csv"
+datExpr_mRNA = f"../MOGDx/data/TCGA/{tcga_project}/raw/datExpr_mRNA.csv"
+
+df_DNAm = pd.read_csv(datExpr_DNAm, index_col=0)
 df_miRNA = pd.read_csv(datExpr_miRNA, index_col=0)
+df_mRNA = pd.read_csv(datExpr_mRNA, index_col=0)
 
-# Carica gli indici dei geni da R e converti a base-0
-top_genes = np.loadtxt(f"../MOGDx/data/TCGA/{tcga_project}/raw/top_genes.txt", dtype=int) - 1
+# Carica gli indici/nomi dei migliori geni/sitiCPG
+cpg_sites_DNAm = np.loadtxt(f"../MOGDx/data/TCGA/{tcga_project}/raw/cpg_sites_DNAm.txt", dtype=str)
+cpg_sites_DNAm = [cpg.strip('"').strip() for cpg in cpg_sites_DNAm]
+top_genes_miRNA = np.loadtxt(f"../MOGDx/data/TCGA/{tcga_project}/raw/top_genes_miRNA.txt", dtype=int) - 1
+top_genes_mRNA = np.loadtxt(f"../MOGDx/data/TCGA/{tcga_project}/raw/top_genes_mRNA.txt", dtype=int) - 1
 
-# Filtra il dataframe mantenendo solo le righe corrispondenti agli indici
-filtered_df = df_miRNA.iloc[top_genes, :]
+# Filtra il dataframe mantenendo solo i migliori geni/sitiCPG
+df_DNAm_cpgs = df_DNAm.loc[:, cpg_sites_DNAm]
+df_miRNA_tg = df_miRNA.iloc[top_genes_miRNA, :]
+df_mRNA_tg = df_mRNA.iloc[top_genes_mRNA, :]
 
-# Verifica la dimensione del dataframe filtrato e del numero di indici
-print("Shape prima di RSVD:")
-print(filtered_df.shape)
-print(f"Numero di indici nel file top_genes.txt: {len(top_genes)}")
-print(f"Numero di righe nel dataframe filtrato: {filtered_df.shape[0]}")
+# Transporre i dataframe per avere i pazienti ogni riga e le features come colonne
+df_miRNA_tg_transpose = df_miRNA_tg.transpose()
+df_mRNA_tg_transpose = df_mRNA_tg.transpose()
 
-# Controlla i nomi dei geni selezionati
-selected_genes = df_miRNA.index[top_genes]
-print("Ecco alcuni dei geni selezionati:")
-print(selected_genes[:10])  # Mostra i primi 10 geni selezionati
+print("Shape of DNAm, miRNA, mRNA:")
+print(df_DNAm_cpgs.shape, df_miRNA_tg_transpose.shape, df_mRNA_tg_transpose.shape)
 
-# Confronta con i valori del file top_genes.txt
-with open(f"../MOGDx/data/TCGA/{tcga_project}/raw/top_genes.txt", 'r') as f:
-    top_genes_in_file = f.readlines()
+# Trova gli indici comuni tra i dataframe di ogni omica
+common_indices = np.intersect1d(np.intersect1d(df_DNAm_cpgs.index, df_miRNA_tg_transpose.index), df_mRNA_tg_transpose.index)
+print("Common indices:", len(common_indices)) #test
 
-# Rimuovi spazi bianchi e converte gli indici in base-1 (per il confronto con il file R)
-top_genes_in_file = [str(int(gene.strip()) + 1) for gene in top_genes_in_file]  # Converte a base-1
-
-# Verifica che i primi 10 geni nel file siano gli stessi estratti
-print("Confronto dei primi 10 geni (base-1):")
-print(top_genes_in_file[:10])
-print("Confronto con i geni selezionati (base-1):")
-print(selected_genes[:10])
-
-# Verifica se c'è qualche differenza tra i geni estratti e quelli nel file
-matching_genes = np.isin(selected_genes, top_genes_in_file)
-print("Verifica della corrispondenza tra i geni selezionati e quelli nel file:")
-print(f"Tutti i geni selezionati corrispondono ai geni nel file: {matching_genes.all()}")
-
-# Salvataggio del dataframe filtrato per una verifica visiva
-filtered_df.to_csv(f"filtered_miRNA_{tcga_project}.csv")
-print("File CSV dei top genes salvato come 'filtered_miRNA_{tcga_project}.csv'")
-
-# print(df_DNAm.shape, df_miRNA.shape, df_mRNA.shape)
+# Filtra il dataframe mantenendo solo i campioni comuni
+df_DNAm_cpgs = df_DNAm_cpgs.loc[common_indices]
+df_miRNA_tg_transpose = df_miRNA_tg_transpose.loc[common_indices]
+df_mRNA_tg_transpose = df_mRNA_tg_transpose.loc[common_indices]
 
 # def calculate_n_components(df, proportion=1):
 #     """
@@ -86,52 +78,35 @@ print("File CSV dei top genes salvato come 'filtered_miRNA_{tcga_project}.csv'")
 # n_components_mirna = calculate_n_components(df_mirna, proportion=0.2)  # 20% per miRNA
 # n_components_rnaseq = calculate_n_components(df_rnaseq, proportion=0.5)  # 50% per RNASeq
 # n_components_rppa = calculate_n_components(df_rppa, proportion=0.2)  # 20% per RPPA
-# #n_components_methy = calculate_n_components(df_methy, proportion=0.05)  # 5% per Methy
 
 # # Applichiamo RSVD su ogni tipo di dato
 # df_mirna_reduced = apply_rsvd(df_mirna, n_components_mirna)
 # df_rnaseq_reduced = apply_rsvd(df_rnaseq, n_components_rnaseq)
 # df_rppa_reduced = apply_rsvd(df_rppa, n_components_rppa)
-# #df_methy_reduced = apply_rsvd(df_methy, n_components_methy)
 
 # print("Shape dopo RSVD:")
 # print(df_mirna_reduced.shape, df_rnaseq_reduced.shape, df_rppa_reduced.shape) #, df_methy_reduced.shape)
 
-# # Calcolo delle matrici di affinità
-# affinity_networks_mirna = snf.make_affinity(df_mirna_reduced, metric='euclidean', K=20, mu=0.5, normalize=True)
-# print("Mirna data affinity networks created")
-# affinity_networks_rnaseq = snf.make_affinity(df_rnaseq_reduced, metric='euclidean', K=20, mu=0.5, normalize=True)
-# print("Rnaseq data affinity networks created")
-# affinity_networks_rppa = snf.make_affinity(df_rppa_reduced, metric='euclidean', K=20, mu=0.5, normalize=True)
-# print("Rppa data affinity networks created")
-# #affinity_networks_methy = snf.make_affinity(df_methy_reduced, metric='euclidean', K=20, mu=0.5, normalize=True)
-# #print("Methy data affinity networks created")
+# Calcolo delle matrici di affinità
+affinity_networks_DNAm = snf.make_affinity(df_DNAm_cpgs, metric='euclidean', K=20, mu=0.5, normalize=True)
+print("DNAm affinity networks created")
+affinity_networks_miRNA = snf.make_affinity(df_miRNA_tg_transpose, metric='euclidean', K=20, mu=0.5, normalize=True)
+print("miRNA affinity networks created")
+affinity_networks_mRNA = snf.make_affinity(df_mRNA_tg_transpose, metric='euclidean', K=20, mu=0.5, normalize=True)
+print("mRNA affinity networks created")
 
-# directory = f'{cancer_type}'
-# if not os.path.exists(directory):
-#     os.makedirs(directory)
+directory = f'{tcga_project}'
+if not os.path.exists(directory):
+    os.makedirs(directory)
 
-# # Salva le matrici di affinità in npy e png
-# np.save(f'{cancer_type}/fused_affinity_matrix_mirna.npy', affinity_networks_mirna)
-# np.save(f'{cancer_type}/fused_affinity_matrix_rnaseq.npy', affinity_networks_rnaseq)
-# np.save(f'{cancer_type}/fused_affinity_matrix_rppa.npy', affinity_networks_rppa)
-# #np.save(f'{cancer_type}/fused_affinity_matrix_methy.npy', affinity_networks_methy)
+# Salva le matrici di affinità in npy
+np.save(f'{tcga_project}/fused_affinity_matrix_DNAm.npy', affinity_networks_DNAm)
+np.save(f'{tcga_project}/fused_affinity_matrix_miRNA.npy', affinity_networks_miRNA)
+np.save(f'{tcga_project}/fused_affinity_matrix_mRNA.npy', affinity_networks_mRNA)
 
-# # Calcolo della matrice di affinità fuse
-# fused_affinity = snf.snf([affinity_networks_mirna, affinity_networks_rnaseq, affinity_networks_rppa], K=20) #, affinity_networks_methy]
-# print(f"Fused affinity networks created for {cancer_type}")
+# Calcolo della matrice di affinità fusa
+fused_affinity_matrix = snf.snf([affinity_networks_DNAm, affinity_networks_miRNA, affinity_networks_mRNA], K=20)
+print(f"Fused affinity networks created for {tcga_project}, shape: {fused_affinity_matrix.shape}")
 
-# # Salva la matrice di affinità fusa in npy e png
-# np.save(f'{cancer_type}/fused_affinity_matrix.npy', fused_affinity)
-
-# plt.imshow(fused_affinity, cmap='viridis', interpolation='nearest')
-# plt.colorbar()
-# plt.title(f'Fused Affinity Matrix - {cancer_type}')
-# plt.savefig(f'{cancer_type}/fused_affinity_matrix_plot.png')  # Salva il plot come immagine
-
-# '''
-# # Carica la matrice di affinità fusa e la stampa 
-# loaded_matrix = np.load(f'{cancer_type}/fused_affinity_matrix.npy')
-# print(loaded_matrix.shape)
-# print(loaded_matrix[:5])  # Controlla i primi 5 valori
-# '''
+# Salva la matrice di affinità fusa in npy
+np.save(f'{tcga_project}/fused_affinity_matrix.npy', fused_affinity_matrix)

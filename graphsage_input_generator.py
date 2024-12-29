@@ -21,8 +21,8 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.impute import SimpleImputer
 
 tcga_project = 'BRCA'
-os.makedirs('inputFilesGraphsage/{}'.format(tcga_project), exist_ok=True)
-log_dir = 'inputFilesGraphsage/{0}/{0}'.format(tcga_project)
+os.makedirs('graphsage_input/{}'.format(tcga_project), exist_ok=True)
+log_dir = 'graphsage_input/{0}/{0}'.format(tcga_project)
 
 def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_names):
     G = nx.Graph()
@@ -31,7 +31,7 @@ def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_na
     if isinstance(feats_data, np.ndarray):
         feats_data_df = pd.DataFrame(feats_data, index=patient_ids, columns=feature_names)
     
-    # feats_data_df.to_csv(os.path.join('inputFilesGraphsage/', 'feats_data_df.csv'), index=True)
+    # feats_data_df.to_csv(os.path.join('graphsage_input/', 'feats_data_df.csv'), index=True)
 
     # Aggiungi i nodi al grafo
     for node_id, label in node_data.items():
@@ -65,7 +65,7 @@ def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_na
         for node in val_nodes:
             G_copy.node[node]['val'] = True
         
-        with open('inputFilesGraphsage/{0}/{0}-G{1}.json'.format(tcga_project, i), 'w') as f:
+        with open('graphsage_input/{0}/{0}-G{1}.json'.format(tcga_project, i), 'w') as f:
             json.dump(json_graph.node_link_data(G_copy), f)
         print('Grafo {} salvato come JSON'.format(i))
 
@@ -146,7 +146,7 @@ print('Classi dei nodi salvate come JSON')
 feats_data = pd.read_csv("dataset/clinical/{}_clinics.csv".format(tcga_project), sep=',')
 encoded_features, feature_names, patient_ids = select_features(feats_data)
 np.save('{}-feats.npy'.format(log_dir), encoded_features)
-# np.savetxt('inputFilesGraphsage/feats_data.txt', encoded_features, delimiter=',')
+# np.savetxt('graphsage_input/feats_data.txt', encoded_features, delimiter=',')
 print('Matrice delle feature dei nodi salvata come .npy')
 
 # Salva il grafo (G) come JSON (10 grafi diversi)
@@ -240,7 +240,7 @@ npy_file_path = '../GraphSAGE/example_data/toy-ppi-feats.npy'
 data = np.load(npy_file_path)
 
 # Salva il contenuto in un file .txt
-txt_file_path = 'inputFilesGraphsage/feats_data_example.txt'
+txt_file_path = 'graphsage_input/feats_data_example.txt'
 np.savetxt(txt_file_path, data, delimiter=',')
 print('File .npy convertito e salvato come .txt')
 '''

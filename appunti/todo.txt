@@ -31,7 +31,8 @@ leggere file doc di jessica dove indica le criticità del preprocessing
 riordinare appunti in ordine di creazione - aggiungere numerino tipo capitoli
 cambiare i requirements su github
 sul git manca **MODIFICHE.md**, o comunque le modifiche al codice sia snf che graphsage
-	snf: cercare 'modifiche' sul file versioneer.py
+	snf: cercare 'modifiche' sul file versioneer.py (sul server è andato senza fare questa modifica)
+    graphsage: cercare 'modifiche' sul file utils.py (ancora da cambiare sul server)
 
 
 

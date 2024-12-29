@@ -20,9 +20,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.impute import SimpleImputer
 
-cancer_type = 'BLCA2'
-os.makedirs('inputFilesGraphsage/{}'.format(cancer_type), exist_ok=True)
-log_dir = 'inputFilesGraphsage/{0}/{0}'.format(cancer_type)
+tcga_project = 'BRCA'
+os.makedirs('inputFilesGraphsage/{}'.format(tcga_project), exist_ok=True)
+log_dir = 'inputFilesGraphsage/{0}/{0}'.format(tcga_project)
 
 def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_names):
     G = nx.Graph()
@@ -65,7 +65,7 @@ def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_na
         for node in val_nodes:
             G_copy.node[node]['val'] = True
         
-        with open('inputFilesGraphsage/{0}/{0}-G{1}.json'.format(cancer_type, i), 'w') as f:
+        with open('inputFilesGraphsage/{0}/{0}-G{1}.json'.format(tcga_project, i), 'w') as f:
             json.dump(json_graph.node_link_data(G_copy), f)
         print('Grafo {} salvato come JSON'.format(i))
 
@@ -107,12 +107,12 @@ def select_features(feats_data):
     return encoded_feats_data.to_numpy(), encoder.get_feature_names(categorical_data.columns), categorical_data.index
 
 # Carica la matrice di affinità fusa
-affinity_matrix = np.load('{}/fused_affinity_matrix.npy'.format(cancer_type))
+affinity_matrix = np.load('{}/fused_affinity_matrix.npy'.format(tcga_project))
 
 # Salva la mappa degli ID dei nodi e le classi dei nodi
 labels = []
 node_ids = []
-with open("dataset/label/{}_os.csv".format(cancer_type), 'r', newline='') as csv_file:
+with open("dataset/label/{}_os.csv".format(tcga_project), 'r', newline='') as csv_file:
     reader = csv.DictReader(csv_file)
     temp_map = {}
 
@@ -143,7 +143,7 @@ print('Classi dei nodi salvate come JSON')
 
 
 # Salva le features dei nodi
-feats_data = pd.read_csv("dataset/clinical/{}_clinics.csv".format(cancer_type), sep=',')
+feats_data = pd.read_csv("dataset/clinical/{}_clinics.csv".format(tcga_project), sep=',')
 encoded_features, feature_names, patient_ids = select_features(feats_data)
 np.save('{}-feats.npy'.format(log_dir), encoded_features)
 # np.savetxt('inputFilesGraphsage/feats_data.txt', encoded_features, delimiter=',')

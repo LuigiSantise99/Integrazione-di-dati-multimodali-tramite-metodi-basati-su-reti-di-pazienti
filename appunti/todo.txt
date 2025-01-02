@@ -7,18 +7,29 @@ preprocessing di brca +
 	knn +
 	controllare sia il numero di pazienti che le features +
 		il numero di features dei processati controllate aprendo il file Rdata su R (con load()) e per mRNA e miRNA controllare il numero di righe di datExp, per le altre il numero di colonne. Il numero di features degli estratti e il numero dei pazienti controllare la matrice (n x m) che esce fuori con knn, n->n_feature m->n_pazienti
+	
+	righe x colonne 
+miRNA: features x pazienti DA TRASPORRE
+DNAm: pazienti x features
+mRNA: features x pazienti DA TRASPORRE
+	devo estrapolare i topgenes (indici) dai dataexpr per poi usare snf. il numero di topgeni sono le feature estratte, il numero di righe di dataexpr sono invece le feature processate (per i mirNA, per dnam è il contrario). quindi l'idea è transporre le matrici che vanno transposte, andare a filtrare solo le features indicate dagli indici di topgene e poi usare snf. 
+	problemi: se faccio una transposta, l'indice cambia? soluzione: per andare sul sicuro posso prima filtrare i topgene, per poi transporre la matrice
+capire anche perchè nella shape le colonne vanno a +1, mentre le righe no 
+	poi usare i datexpr nel mio snf, delle omiche usate nella tabella del paper (quella evidenziata) +
+	
+	preprocessing: dat expr vanno presi solo i top genes +
+		per salvare il file txt dei topgenes ho usato questa riga: write.table(top_genes, "raw/top_genes.txt", row.names = FALSE, col.names = FALSE) # dopo aver load(.rds)
+		se uso già i topgeni, inutile fare rsvd? per ora non ho usato rsvd 
 
-poi usare i datexpr nel mio snf, delle omiche usate nella tabella del paper (quella evidenziata)
+	creazione dei dati di input:
+		innanzitutto ho unito i tre file meta mantenendo solo i pazienti in comune. -> sono 696 pazienti, il paper ne contava 698
+			devo far in modo che per ogni paziente salvi solo una volta le categorical column e la label, e non salvi le restanti colonne 
+		gestire gli NA
 	
-	
+
 
 leggere paper di MOGONET e MoGCN: controllare se i risultati sono gli stessi o quelli di mogdx li hanno fatti rigirare (tabella 2)
 
-label: paper grade (per lgg, invece per brca è l'altro mi pare quello con 50)
-
-dati clinici: 
-
-preprocessing: dat expr vanno presi solo i top genes
 
 ti sei accorto che per le variabili cliniche (race, ethnicity) hai dei valori "not reported"? questi equivalgono a degli NAs ovviamente 
 	soluzione: cambiare i valori in NAs o comunque come li vuole il codice
@@ -31,22 +42,7 @@ leggere file doc di jessica dove indica le criticità del preprocessing
 riordinare appunti in ordine di creazione - aggiungere numerino tipo capitoli
 cambiare i requirements su github
 sul git manca **MODIFICHE.md**, o comunque le modifiche al codice sia snf che graphsage
-	snf: cercare 'modifiche' sul file versioneer.py (sul server è andato senza fare questa modifica)
-    graphsage: cercare 'modifiche' sul file utils.py (ancora da cambiare sul server)
+	snf: cercare 'modifiche' sul file versioneer.py
+	utils (graphsage) , cercare modifiche 
 
-
-
-
-
-righe x colonne
-miRNA: features x pazienti DA TRASPORRE
-DNAm: pazienti x features
-mRNA: features x pazienti DA TRASPORRE
-
-devo estrapolare i topgenes (indici) dai dataexpr per poi usare snf. il numero di topgeni sono le feature estratte, il numero di righe di dataexpr sono invece le feature processate (per i mirNA, per dnam è il contrario). quindi l'idea è transporre le matrici che vanno transposte, andare a filtrare solo le features indicate dagli indici di topgene e poi usare snf. 
-	problemi: se faccio una transposta, l'indice cambia? soluzione: per andare sul sicuro posso prima filtrare i topgene, per poi transporre la matrice
-capire anche perchè nella shape le colonne vanno a +1, mentre le righe no
-
-se uso già i topgeni, inutile fare rsvd?
-
-per salvare il file txt dei topgenes ho usato questa riga: write.table(top_genes, "raw/top_genes.txt", row.names = FALSE, col.names = FALSE) # dopo aver load(.rds), 
+ 

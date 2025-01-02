@@ -4,4 +4,7 @@ __pycache__/
 BRCA/
 
 # output files (G, mapping, etc.)
-inputFilesGraphsage/
+graphsage_input/
+
+# test
+merged_data.csv

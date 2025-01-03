@@ -24,281 +24,124 @@ tcga_project = 'BRCA'
 os.makedirs('graphsage_input/{}'.format(tcga_project), exist_ok=True)
 log_dir = 'graphsage_input/{0}/{0}'.format(tcga_project)
 
-# Carica i dati dai file CSV
-file1_path = '../MOGDx/data/TCGA/{}/raw/datMeta_DNAm.csv'.format(tcga_project)
-file2_path = '../MOGDx/data/TCGA/{}/raw/datMeta_miRNA.csv'.format(tcga_project)
-file3_path = '../MOGDx/data/TCGA/{}/raw/datMeta_mRNA.csv'.format(tcga_project)
+# Carica i dati delle omiche da utilizzare
+DNAm_data = pd.read_csv('../MOGDx/data/TCGA/{}/raw/datMeta_DNAm.csv'.format(tcga_project))
+miRNA_data = pd.read_csv('../MOGDx/data/TCGA/{}/raw/datMeta_miRNA.csv'.format(tcga_project))
+mRNA_data = pd.read_csv('../MOGDx/data/TCGA/{}/raw/datMeta_mRNA.csv'.format(tcga_project))
 
-data1 = pd.read_csv(file1_path)
-data2 = pd.read_csv(file2_path)
-data3 = pd.read_csv(file3_path)
+# Filtra solo i pazienti che compaiono in tutte e tre le omiche e unisci in un unico file senza ripetizioni
+common_patients = set(DNAm_data['patient']).intersection(miRNA_data['patient']).intersection(mRNA_data['patient'])
+DNAm_data = DNAm_data[DNAm_data['patient'].isin(common_patients)]
+miRNA_data = miRNA_data[miRNA_data['patient'].isin(common_patients)]
+mRNA_data = mRNA_data[mRNA_data['patient'].isin(common_patients)]
 
-# Unisci i dati sui pazienti in comune
-merged_data = data1.merge(data2, on='patient').merge(data3, on='patient')
+merged_data = pd.concat([DNAm_data, miRNA_data, mRNA_data], sort=False).drop_duplicates(subset='patient')
+
+# Seleziona le colonne desiderate e gestisce i dati mancanti
+categorical_columns = ["race", "gender", "ethnicity", "age_at_diagnosis"]
+label_column = "paper_BRCA_Subtype_PAM50"
+selected_columns = ["patient"] + categorical_columns + [label_column]
+merged_data = merged_data[selected_columns].replace("not reported", "nan")
+
+merged_data[categorical_columns] = merged_data[categorical_columns].astype(str)
+
+# Codifica le colonne categoriche in formato one-hot
+imputer = SimpleImputer(strategy='constant', fill_value='nan')
+encoded_data = imputer.fit_transform(merged_data[categorical_columns])
+
+# Stampa il numero di categorie e le categorie per ogni colonna (test: capire quali sono le categorie uniche per ogni colonna prima di applicare l'encoder)
+# for col in categorical_columns:
+#     unique_values = np.unique(encoded_data[:, categorical_columns.index(col)])
+#     print("Colonna '{0}' ha {1} categorie: {2}". format(col, len(unique_values), unique_values))
+
+encoder = OneHotEncoder(sparse=False)
+encoded_features = encoder.fit_transform(encoded_data)
+
+# Codifica le etichette in formato one-hot
+labels = merged_data[label_column].astype(str)
+label_encoder = OneHotEncoder(sparse=False)
+labels_one_hot = label_encoder.fit_transform(labels.values.reshape(-1, 1))
+
+# Stampa il numero di categorie e le categorie per le label (test: capire quali sono le label uniche)
+# label_unique_values = np.unique(labels)
+# print("Colonna '{0}' ha {1} categorie: {2}".format(label_column, len(label_unique_values), label_unique_values))
+
+# Crea la mappa degli ID dei nodi
+node_ids = merged_data["patient"].tolist()
+id_map = {node_id: i for i, node_id in enumerate(node_ids)}
+
+# Crea la mappa delle classi dei nodi
+class_map = {node_id: label.tolist() for node_id, label in zip(node_ids, labels_one_hot)}
+
+# Salva i file richiesti (mappa degli ID, mappa delle classi e features)
+with open('{}-id_map.json'.format(log_dir), 'w') as f:
+    json.dump(id_map, f)
+with open('{}-class_map.json'.format(log_dir), 'w') as f:
+    json.dump(class_map, f)
+np.save('{}-feats.npy'.format(log_dir), encoded_features)
+
+print('File salvati con successo.')
 
 # Salva merged_data come CSV
-merged_data.to_csv('merged_data.csv', index=False)
+# merged_data.to_csv('merged_data.csv', index=False)
 
+# Salva un pddata come CSV
+# labels_one_hot_df = pd.DataFrame(labels_one_hot)
+# labels_one_hot_df.to_csv('labels_one_hot_df.csv', index=False)
 
-# def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_names):
-#     G = nx.Graph()
+# Carica la matrice di affinità fusa
+affinity_matrix = np.load('{}/fused_affinity_matrix.npy'.format(tcga_project))
 
-#     # Se i nodi sono rappresentati come un array numpy, convertili in un DataFrame
-#     if isinstance(feats_data, np.ndarray):
-#         feats_data_df = pd.DataFrame(feats_data, index=patient_ids, columns=feature_names)
-    
-#     # feats_data_df.to_csv(os.path.join('graphsage_input/', 'feats_data_df.csv'), index=True)
+def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_names):
+    G = nx.Graph()
 
-#     # Aggiungi i nodi al grafo
-#     for node_id, label in node_data.items():
-#         # label = [1, 0] if death == 0 else [0, 1] # codifica one-hot (0 = [1, 0], 1 = [0, 1])
-#         features = feats_data_df.loc[node_id].tolist()
-#         G.add_node(node_id, label=label, features=features, val=False, test=False)
+    # Se i nodi sono rappresentati come un array numpy, convertili in un DataFrame
+    if isinstance(feats_data, np.ndarray):
+        feats_data_df = pd.DataFrame(feats_data, index=patient_ids, columns=feature_names)
+
+    # Aggiungi i nodi al grafo
+    for node_id, label in node_data.items():
+        features = feats_data_df.loc[node_id].tolist()
+        G.add_node(node_id, label=label, features=features, val=False, test=False)
         
+    # Stampa i nodi e le loro etichette (test)
+    print("Nodi e le loro etichette dopo l'aggiunta al grafo:")
+    for node_id, label in node_data.items():
+        print("Node ID: {0}, Label: {1}".format(node_id, label))
             
-#     # Aggiungi gli archi al grafo
-#     num_nodes = affinity_matrix.shape[0]
-#     for i in range(num_nodes):
-#         for j in range(i+1, num_nodes):
-#             if affinity_matrix[i, j] > 0:
-#                  G.add_edge(node_ids[i], node_ids[j], train_removed=False, test_removed=False)
+    # Aggiungi gli archi al grafo
+    num_nodes = affinity_matrix.shape[0]
+    for i in range(num_nodes):
+        for j in range(i+1, num_nodes):
+            if affinity_matrix[i, j] > 0:
+                G.add_edge(node_ids[i], node_ids[j], train_removed=False, test_removed=False)
 
-    
-#     one_hot_labels = [data['label'] for _, data in G.nodes(data=True)] # array delle etichette dei nodi in formato one-hot
-#     labels = np.argmax(one_hot_labels, axis=1) # array delle etichette dei nodi in formato intero
+    # Suddivide i nodi in set di addestramento, validazione e test
+    one_hot_labels = [data['label'] for _, data in G.nodes(data=True)] # array delle etichette dei nodi in formato one-hot
+    labels = np.argmax(one_hot_labels, axis=1) # array delle etichette dei nodi in formato intero
 
-#     for i in range(10):
-#         random_state=42+i
-#         G_copy = copy.deepcopy(G)
+    random_state=42
 
-#         train_nodes, test_nodes = train_test_split(list(G_copy.nodes()), test_size=0.1, shuffle=True, stratify=labels, random_state=random_state) # 10% test set del set completo
-#         for node in test_nodes:
-#             G_copy.node[node]['test'] = True
+    train_nodes, test_nodes = train_test_split(list(G.nodes()), test_size=0.1, shuffle=True, stratify=labels, random_state=random_state) # 10% test set del set completo
+    for node in test_nodes:
+        G.node[node]['test'] = True
 
-#         train_labels = np.argmax([G_copy.node[node].get('label') for node in train_nodes], axis=1) # array delle etichette dei nodi di train in formato intero
+    train_labels = np.argmax([G.node[node].get('label') for node in train_nodes], axis=1) # array delle etichette dei nodi di train in formato intero
 
-#         train_nodes, val_nodes = train_test_split(train_nodes, test_size=0.25, shuffle=True, stratify=train_labels, random_state=random_state) # 22,5% val set del set completo, train set 67,5% del set completo
-#         for node in val_nodes:
-#             G_copy.node[node]['val'] = True
+    train_nodes, val_nodes = train_test_split(train_nodes, test_size=0.25, shuffle=True, stratify=train_labels, random_state=random_state) # 22,5% val set del set completo, train set 67,5% del set completo
+    for node in val_nodes:
+        G.node[node]['val'] = True
         
-#         with open('graphsage_input/{0}/{0}-G{1}.json'.format(tcga_project, i), 'w') as f:
-#             json.dump(json_graph.node_link_data(G_copy), f)
-#         print('Grafo {} salvato come JSON'.format(i))
-
-# def select_features(feats_data):
-#     # Seleziona le colonne categoriche
-#     categorical_columns = ["patientID", "years_to_birth", "gender", "ethnicity", 
-#                           "patient.age_at_initial_pathologic_diagnosis"]
+    # Salva file dei nodi e delle loro etichette (test per capire se le label corrispondono)
+#     with open('nodi_etichette.txt', 'w') as f:
+#         f.write("Nodi e le loro etichette dopo l'aggiunta al grafo:\n")
+#         for node_id, data in G.nodes(data=True):
+#             f.write("Node ID: {0}, Label: {1}, Val: {2}, Test: {3}\n".format(node_id, data['label'], data['val'], data['test']))
     
-#     # Verifica quale colonna "race" è presente con priorità a "race"
-#     if 'race' in feats_data.columns:
-#         categorical_columns.append('race')
-#     elif 'patient.race' in feats_data.columns:
-#         categorical_columns.append('patient.race')
-#     elif 'patient.clinical_cqcf.race' in feats_data.columns:
-#         categorical_columns.append('patient.clinical_cqcf.race')
-
-#     # Trova le colonne presenti sia nel DataFrame che nella lista categorical_columns
-#     available_columns = list(set(categorical_columns).intersection(feats_data.columns))
-
-#     categorical_data = feats_data[available_columns]
-#     print(categorical_data.head()) # Stampa le prime righe del DataFrame considerando solo le colonne categoriche
-#     categorical_data.set_index('patientID', inplace=True)
-#     categorical_data = categorical_data.astype(str)
-#     #print(categorical_data)
-
-#     # Initialize SimpleImputer to fill NaN values with a placeholder
-#     imputer = SimpleImputer(strategy='constant', fill_value='missing')
-#     # Apply SimpleImputer
-#     imputed_categorical_data = imputer.fit_transform(categorical_data)
-#     # Inizializza OneHotEncoder
-#     encoder = OneHotEncoder(sparse=False)
-#     # Applica OneHotEncoder e trasforma le colonne categoriche
-#     encoded_features = encoder.fit_transform(imputed_categorical_data)
-
-#     # Creazione del DataFrame delle feature codificate
-#     encoded_feats_data = pd.DataFrame(encoded_features, columns=encoder.get_feature_names(categorical_data.columns))
-#     encoded_feats_data.index = categorical_data.index
-    
-#     return encoded_feats_data.to_numpy(), encoder.get_feature_names(categorical_data.columns), categorical_data.index
-
-# # Carica la matrice di affinità fusa
-# affinity_matrix = np.load('{}/fused_affinity_matrix.npy'.format(tcga_project))
-
-# # Salva la mappa degli ID dei nodi e le classi dei nodi
-# labels = []
-# node_ids = []
-# with open("dataset/label/{}_os.csv".format(tcga_project), 'r', newline='') as csv_file:
-#     reader = csv.DictReader(csv_file)
-#     temp_map = {}
-
-#     for row in reader:
-#         node_id = row[''] # ID del nodo
-#         death = int(row['nn'])  # Classe del nodo
-#         temp_map[node_id] = death
-#         node_ids.append(node_id)
-    
-#     for node_id in node_ids:
-#         labels.append(temp_map[node_id])
-
-# # Identifica il numero di classi
-# num_classes = len(set(labels))
-
-# # Converti le etichette in formato one-hot
-# labels_one_hot = np.eye(num_classes)[labels]
-
-# id_map = {node_id: i for i, node_id in enumerate(node_ids)}
-# with open('{}-id_map.json'.format(log_dir), 'w') as f:
-#     json.dump(id_map, f)
-# print('Mappa degli ID dei nodi salvata come JSON')
-
-# class_map = {node_id: label.tolist() for node_id, label in zip(node_ids, labels_one_hot)}
-# with open('{}-class_map.json'.format(log_dir), 'w') as f:
-#     json.dump(class_map, f)
-# print('Classi dei nodi salvate come JSON')
-
-
-# # Salva le features dei nodi
-# feats_data = pd.read_csv("dataset/clinical/{}_clinics.csv".format(tcga_project), sep=',')
-# encoded_features, feature_names, patient_ids = select_features(feats_data)
-# np.save('{}-feats.npy'.format(log_dir), encoded_features)
-# # np.savetxt('graphsage_input/feats_data.txt', encoded_features, delimiter=',')
-# print('Matrice delle feature dei nodi salvata come .npy')
-
-# # Salva il grafo (G) come JSON (10 grafi diversi)
-# create_graph(affinity_matrix, class_map, encoded_features, patient_ids, feature_names)
-# # with open('{}-G.json'.format(log_dir), 'w') as f:
-# #    json.dump(json_graph.node_link_data(G), f)
-# # print('Grafo salvato come JSON')
-
-'''
-def check_features_for_id(node_id):
-    if node_id in id_map:
-        # Ottieni l'indice associato all'ID specifico dall'id_map
-        index = id_map[node_id]
-
-        # Ottieni le features salvate in feats.npy per quell'indice
-        saved_features = encoded_features[index]
-
-        # Trova il nodo nel grafo con lo stesso ID
-        node_in_graph = next((data for node, data in G.nodes(data=True) if node == node_id), None)
-
-        if node_in_graph:
-            graph_features = node_in_graph['features']
-
-            # Confronta le features
-            if np.allclose(graph_features, saved_features):
-                print("Le features per il nodo {} corrispondono.".format(node_id))
-                print("Features nel grafo: {}".format(graph_features))
-                print("Features salvate in feats.npy: {}".format(saved_features))
-            else:
-                print("Le features per il nodo {} NON corrispondono.".format(node_id))
-                print("Features nel grafo: {}".format(graph_features))
-                print(len(graph_features))
-                print("Features salvate in feats.npy: {}".format(saved_features))
-                print(len(saved_features))
-
-            # Trova le posizioni degli 1 nelle features salvate e in quelle del grafo
-            saved_positions = [i for i, x in enumerate(saved_features) if x == 1]
-            graph_positions = [i for i, x in enumerate(graph_features) if x == 1]
-
-            # Confronta le posizioni degli 1
-            if saved_positions == graph_positions:
-                print("Le posizioni degli 1 per il nodo {} corrispondono.".format(node_id))
-                print("Posizioni degli 1 nel grafo: {}".format(graph_positions))
-                print("Posizioni degli 1 salvate in feats.npy: {}".format(saved_positions))
-            else:
-                print("Le posizioni degli 1 per il nodo {} NON corrispondono.".format(node_id))
-                print("Posizioni degli 1 nel grafo: {}".format(graph_positions))
-                print("Posizioni degli 1 salvate in feats.npy: {}".format(saved_positions))
-        else:
-            print("Il nodo con ID {} non è stato trovato nel grafo.".format(node_id))
-    else:
-        print("L'ID {} non è presente in id_map.".format(node_id))
-
-# Specifica l'ID del nodo che vuoi controllare
-node_id_to_check = "TCGA-BL-A13I"
-check_features_for_id(node_id_to_check)
-'''
-'''
-def check_all_features():
-    all_match = True
-
-    for node_id in node_ids:
-        if node_id in id_map:
-            index = id_map[node_id]
-            saved_features = encoded_features[index]
-            node_in_graph = next((data for node, data in G.nodes(data=True) if node == node_id), None)
-
-            if node_in_graph:
-                graph_features = node_in_graph['features']
-                if not np.allclose(graph_features, saved_features):
-                    all_match = False
-                    break
-            else:
-                all_match = False
-                break
-        else:
-            all_match = False
-            break
-
-    if all_match:
-        print("Tutte le features combaciano.")
-    else:
-        print("Almeno una feature non combacia.")
-
-check_all_features()
-'''
-
-'''
-# Carica il file .npy
-npy_file_path = '../GraphSAGE/example_data/toy-ppi-feats.npy'
-data = np.load(npy_file_path)
-
-# Salva il contenuto in un file .txt
-txt_file_path = 'graphsage_input/feats_data_example.txt'
-np.savetxt(txt_file_path, data, delimiter=',')
-print('File .npy convertito e salvato come .txt')
-'''
-
-'''
-if G is not None:
-    with open('{}-G.json'.format(log_dir), 'w') as f:
-        json.dump(json_graph.node_link_data(G), f)
-    print('Grafo salvato come JSON')
-
-    # Estrai gli ID dal grafo
-    graph_ids = [node for node in G.nodes()]
-    
-    # Controlla che ogni ID del grafo sia in id_map
-    missing_ids = [id_ for id_ in graph_ids if id_ not in id_map]
-    if missing_ids:
-        print("Questi ID del grafo non sono presenti in id_map:", missing_ids)
-    else:
-        print("Tutti gli ID del grafo sono presenti in id_map.")
-else:
-    print("Failed to create graph due to input errors.")
-
-'''
-
-
-
-'''
-colonne_interesse = ['age_at_initial_pathologic_diagnosis']
-df_selezionato = feats_data[colonne_interesse]
-print(df_selezionato)
-'''
-
-'''
-# Specifica il percorso del file .npy
-file_path = '../GraphSAGE/example_data/toy-ppi-feats.npy'
-
-# Carica il file .npy
-data = np.load(file_path)
-
-# Stampa il contenuto
-df = pd.DataFrame(data)
-
-# Stampa il DataFrame
-print(df)
-'''
+    return G
+                
+# Salva il grafo (G) come JSON
+G = create_graph(affinity_matrix, class_map, encoded_features, node_ids, encoder.get_feature_names(categorical_columns))   
+with open('{}-G.json'.format(log_dir), 'w') as f:
+    json.dump(json_graph.node_link_data(G), f)
+print('Grafo salvato come JSON.')

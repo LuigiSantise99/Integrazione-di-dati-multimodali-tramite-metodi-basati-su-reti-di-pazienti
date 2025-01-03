@@ -22,9 +22,19 @@ capire anche perchè nella shape le colonne vanno a +1, mentre le righe no
 		se uso già i topgeni, inutile fare rsvd? per ora non ho usato rsvd 
 
 	creazione dei dati di input:
-		innanzitutto ho unito i tre file meta mantenendo solo i pazienti in comune. -> sono 696 pazienti, il paper ne contava 698
+		innanzitutto ho unito i tre file meta mantenendo solo i pazienti in comune. -> sono 696 pazienti, il paper ne contava 698.
+			L'altro numero (1083) considera tutti i pazienti e non solo quelli in comune nei tre file.
 			devo far in modo che per ogni paziente salvi solo una volta le categorical column e la label, e non salvi le restanti colonne 
-		gestire gli NA
+		filtrare e unire i file
+		gestire gli NA -> nel file c'erano siano 'not reported' che 'nan', sono diventati tutti 'nan'. I valori vuoti diventeranno 'nan'
+		codifica one hot sulle features. si creano molti elementi per via della features sull'età della diagniosi.
+		codifica one hot delle label.
+		creazione id map e class map
+		creazione grafo g (controllare bene se ogni nodo ha le giuste features e label)*******
+		
+
+	usare graphsage:
+		segnare anche le tempistiches
 	
 
 

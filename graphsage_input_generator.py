@@ -1,12 +1,3 @@
-'''
-File di Input Richiesti da GraphSAGE:
-
-<train_prefix>-G.json: Descrizione del grafo in formato JSON.
-<train_prefix>-id_map.json: Mappa dei nodi del grafo agli ID consecutivi.
-<train_prefix>-class_map.json: Mappa dei nodi del grafo alle classi.
-<train_prefix>-feats.npy: Matrice delle feature dei nodi (opzionale).
-<train_prefix>-walks.txt: Specifica delle co-occorrenze dei random walk (solo se il modello è n2v(?)).
-'''
 # python version 3.5.6
 import networkx as nx
 import numpy as np
@@ -76,11 +67,12 @@ class_map = {node_id: label.tolist() for node_id, label in zip(node_ids, labels_
 # Salva i file richiesti (mappa degli ID, mappa delle classi e features)
 with open('{}-id_map.json'.format(log_dir), 'w') as f:
     json.dump(id_map, f)
+print('Mappatura degli ID salvata con successo.')
 with open('{}-class_map.json'.format(log_dir), 'w') as f:
     json.dump(class_map, f)
+print('Mappatura delle classi salvata con successo.')
 np.save('{}-feats.npy'.format(log_dir), encoded_features)
-
-print('File salvati con successo.')
+print('Features dei pazienti salvate con successo.')
 
 # Salva merged_data come CSV
 # merged_data.to_csv('merged_data.csv', index=False)
@@ -105,9 +97,9 @@ def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_na
         G.add_node(node_id, label=label, features=features, val=False, test=False)
         
     # Stampa i nodi e le loro etichette (test)
-    print("Nodi e le loro etichette dopo l'aggiunta al grafo:")
-    for node_id, label in node_data.items():
-        print("Node ID: {0}, Label: {1}".format(node_id, label))
+#     print("Nodi e le loro etichette dopo l'aggiunta al grafo:")
+#     for node_id, label in node_data.items():
+#         print("Node ID: {0}, Label: {1}".format(node_id, label))
             
     # Aggiungi gli archi al grafo
     num_nodes = affinity_matrix.shape[0]
@@ -144,4 +136,12 @@ def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_na
 G = create_graph(affinity_matrix, class_map, encoded_features, node_ids, encoder.get_feature_names(categorical_columns))   
 with open('{}-G.json'.format(log_dir), 'w') as f:
     json.dump(json_graph.node_link_data(G), f)
-print('Grafo salvato come JSON.')
+print('Grafo salvato con successo.')
+
+
+# Stampa alcune informazioni sui nodi per verificare la creazione corretta (test: per verificare che label e features siano assegnate in modo corretto nel grafo)
+# print("Informazioni sui nodi:")
+# for i, (node_id, data) in enumerate(G.nodes(data=True)):
+#     if i >= 5:  # Stampa solo i primi 10 nodi per esempio
+#         break
+#     print("Node ID: {0}, Features: {1}, Label: {2}".format(node_id, data.get('features'), data.get('label')))

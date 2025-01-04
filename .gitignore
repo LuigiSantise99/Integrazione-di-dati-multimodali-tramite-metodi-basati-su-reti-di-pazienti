@@ -1,7 +1,7 @@
 __pycache__/
 
 # affinity matrix
-BRCA/
+affinity_matrices/
 
 # output files (G, mapping, etc.)
 graphsage_input/

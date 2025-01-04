@@ -67,12 +67,12 @@ class_map = {node_id: label.tolist() for node_id, label in zip(node_ids, labels_
 # Salva i file richiesti (mappa degli ID, mappa delle classi e features)
 with open('{}-id_map.json'.format(log_dir), 'w') as f:
     json.dump(id_map, f)
-print('Mappatura degli ID salvata con successo.')
+print('ID mapping successfully saved.')
 with open('{}-class_map.json'.format(log_dir), 'w') as f:
     json.dump(class_map, f)
-print('Mappatura delle classi salvata con successo.')
+print('Class mapping successfully saved.')
 np.save('{}-feats.npy'.format(log_dir), encoded_features)
-print('Features dei pazienti salvate con successo.')
+print('Features of patients successfully saved.')
 
 # Salva merged_data come CSV
 # merged_data.to_csv('merged_data.csv', index=False)
@@ -82,7 +82,7 @@ print('Features dei pazienti salvate con successo.')
 # labels_one_hot_df.to_csv('labels_one_hot_df.csv', index=False)
 
 # Carica la matrice di affinità fusa
-affinity_matrix = np.load('{}/fused_affinity_matrix.npy'.format(tcga_project))
+affinity_matrix = np.load('affinity_matrices/{}/fused_affinity_matrix.npy'.format(tcga_project))
 
 def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_names):
     G = nx.Graph()
@@ -136,8 +136,7 @@ def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_na
 G = create_graph(affinity_matrix, class_map, encoded_features, node_ids, encoder.get_feature_names(categorical_columns))   
 with open('{}-G.json'.format(log_dir), 'w') as f:
     json.dump(json_graph.node_link_data(G), f)
-print('Grafo salvato con successo.')
-
+print('Graph successfully saved.')
 
 # Stampa alcune informazioni sui nodi per verificare la creazione corretta (test: per verificare che label e features siano assegnate in modo corretto nel grafo)
 # print("Informazioni sui nodi:")

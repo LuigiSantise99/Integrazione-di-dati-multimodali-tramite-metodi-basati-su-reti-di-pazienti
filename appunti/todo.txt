@@ -21,7 +21,7 @@ capire anche perchè nella shape le colonne vanno a +1, mentre le righe no
 		per salvare il file txt dei topgenes ho usato questa riga: write.table(top_genes, "raw/top_genes.txt", row.names = FALSE, col.names = FALSE) # dopo aver load(.rds)
 		se uso già i topgeni, inutile fare rsvd? per ora non ho usato rsvd 
 
-	creazione dei dati di input:
+	creazione dei dati di input: +
 		innanzitutto ho unito i tre file meta mantenendo solo i pazienti in comune. -> sono 696 pazienti, il paper ne contava 698.
 			L'altro numero (1083) considera tutti i pazienti e non solo quelli in comune nei tre file.
 			devo far in modo che per ogni paziente salvi solo una volta le categorical column e la label, e non salvi le restanti colonne 
@@ -30,29 +30,31 @@ capire anche perchè nella shape le colonne vanno a +1, mentre le righe no
 		codifica one hot sulle features. si creano molti elementi per via della features sull'età della diagniosi.
 		codifica one hot delle label.
 		creazione id map e class map
-		creazione grafo g (controllare bene se ogni nodo ha le giuste features e label)*******
+		creazione grafo g 
+			controllato che ogni nodo abbia le giuste features e label +
 		
 
 	usare graphsage:
-		segnare anche le tempistiches
+		segnare anche le tempistiche
+	
+		prima cosa è come impostare ora le flag sul training supervisionato in modo efficiente. devo capire quali vengono usati su mogdx probabilmente, per prendere spunto
+		cosa fare: su mogdx calcola 2 metriche: accuracy e f1_score. graphsage invece calcola la loss, l'f1 score micro e macro. la cosa più logica da fare per un confronto è andare a calcolare le stesse metriche di mogdx. 
+		altra cosa che mi chiedo è: ma su mogdx, quei valori, si riferiscono a training, validazione o test? inoltre avendo cambiato i dati, vanno bene lo stesso le percentuali che uso per dividere questi set?
+		
 	
 
 
 leggere paper di MOGONET e MoGCN: controllare se i risultati sono gli stessi o quelli di mogdx li hanno fatti rigirare (tabella 2)
 
-
-ti sei accorto che per le variabili cliniche (race, ethnicity) hai dei valori "not reported"? questi equivalgono a degli NAs ovviamente 
-	soluzione: cambiare i valori in NAs o comunque come li vuole il codice
-
 leggere file doc di jessica dove indica le criticità del preprocessing
 
-******************mandare email all prof casiraghi per capire se la laurea a febbraio è possibile
+******************laurea a febbraio possibile?
 
 
 riordinare appunti in ordine di creazione - aggiungere numerino tipo capitoli
 cambiare i requirements su github
 sul git manca **MODIFICHE.md**, o comunque le modifiche al codice sia snf che graphsage
-	snf: cercare 'modifiche' sul file versioneer.py
-	utils (graphsage) , cercare modifiche 
+	snf: cercare 'modifiche' sul file versioneer.py (sul server non è servito)
+	utils (graphsage). riga 70
 
  

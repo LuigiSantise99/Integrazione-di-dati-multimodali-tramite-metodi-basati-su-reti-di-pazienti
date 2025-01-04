@@ -95,18 +95,18 @@ print("miRNA affinity networks created")
 affinity_networks_mRNA = snf.make_affinity(df_mRNA_tg_transpose, metric='euclidean', K=20, mu=0.5, normalize=True)
 print("mRNA affinity networks created")
 
-directory = f'{tcga_project}'
+directory = f'affinity_matrices/{tcga_project}'
 if not os.path.exists(directory):
     os.makedirs(directory)
 
 # Salva le matrici di affinità in npy
-np.save(f'{tcga_project}/fused_affinity_matrix_DNAm.npy', affinity_networks_DNAm)
-np.save(f'{tcga_project}/fused_affinity_matrix_miRNA.npy', affinity_networks_miRNA)
-np.save(f'{tcga_project}/fused_affinity_matrix_mRNA.npy', affinity_networks_mRNA)
+np.save(f'affinity_matrices/{tcga_project}/fused_affinity_matrix_DNAm.npy', affinity_networks_DNAm)
+np.save(f'affinity_matrices/{tcga_project}/fused_affinity_matrix_miRNA.npy', affinity_networks_miRNA)
+np.save(f'affinity_matrices/{tcga_project}/fused_affinity_matrix_mRNA.npy', affinity_networks_mRNA)
 
 # Calcolo della matrice di affinità fusa
 fused_affinity_matrix = snf.snf([affinity_networks_DNAm, affinity_networks_miRNA, affinity_networks_mRNA], K=20)
 print(f"Fused affinity networks created for {tcga_project}, shape: {fused_affinity_matrix.shape}")
 
 # Salva la matrice di affinità fusa in npy
-np.save(f'{tcga_project}/fused_affinity_matrix.npy', fused_affinity_matrix)
+np.save(f'affinity_matrices/{tcga_project}/fused_affinity_matrix.npy', fused_affinity_matrix)

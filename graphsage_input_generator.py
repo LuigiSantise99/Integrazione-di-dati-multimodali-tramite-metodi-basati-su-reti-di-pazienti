@@ -114,13 +114,13 @@ def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_na
 
     random_state=42
 
-    train_nodes, test_nodes = train_test_split(list(G.nodes()), test_size=0.1, shuffle=True, stratify=labels, random_state=random_state) # 10% test set del set completo
+    train_nodes, test_nodes = train_test_split(list(G.nodes()), test_size=0.2, shuffle=True, stratify=labels, random_state=random_state) # 10% test set del set completo (20% per fare uguale a mogdx)
     for node in test_nodes:
         G.node[node]['test'] = True
 
     train_labels = np.argmax([G.node[node].get('label') for node in train_nodes], axis=1) # array delle etichette dei nodi di train in formato intero
 
-    train_nodes, val_nodes = train_test_split(train_nodes, test_size=0.25, shuffle=True, stratify=train_labels, random_state=random_state) # 22,5% val set del set completo, train set 67,5% del set completo
+    train_nodes, val_nodes = train_test_split(train_nodes, test_size=0.15, shuffle=True, stratify=train_labels, random_state=random_state) # 22,5% val set del set completo, train set 67,5% del set completo (val set 12% e train set 68% come mogdx)
     for node in val_nodes:
         G.node[node]['val'] = True
         

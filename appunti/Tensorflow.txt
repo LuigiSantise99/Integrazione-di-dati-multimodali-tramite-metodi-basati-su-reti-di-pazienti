@@ -1,6 +1,10 @@
 tensorboard --logdir=sup-<name>
 Vai a http://localhost:6006 nel tuo browser per vedere le visualizzazioni.
 
+per accedere su browser locale:
+	su cmd -> ssh -L 6006:localhost:6006 santise@159.149.129.204
+	e poi da terminale su server -> tensorboard --logdir=sup-<name>
+
 
 tensor = tensore, è una struttura dati generale definita in un singolo spazio vettoriale. I tensori sono gli elementi fondamentali su cui operano le operazioni di TensorFlow. Nel contesto del modello supervisionato, i tensori rappresentano le variabili necessarie per l'addestramento. Ad esempio i placeholders sono definiti come tensori per rappresentare le etichette, i batch e il dropout. 
 flow = flusso che viene eseguito per il calcolo di operazioni complesse

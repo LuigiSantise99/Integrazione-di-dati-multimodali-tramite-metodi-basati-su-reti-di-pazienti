@@ -22,21 +22,27 @@ datMeta <- datMeta[!(duplicated(datMeta)),]
 rownames(datMeta) <- datMeta[[index_col]]
 print(dim(datMeta))
 
-# Inizializza la lista per salvare gli ID di ogni file datMeta
-idx <- list()
+# Percorso di base per i file datMeta
+base_path <- "../MOGDx/data/TCGA/BRCA/raw/"
 
-# Specifica i file datMeta da caricare
-files <- c('../MOGDx/data/',dataset,'/',project,'/raw/datMeta_mRNA.csv', 
-           '../MOGDx/data/',dataset,'/',project,'/raw/datMeta_miRNA.csv', 
-           '../MOGDx/data/',dataset,'/',project,'/raw/datMeta_DNAm.csv')
+# File datMeta da caricare
+files <- c("datMeta_mRNA.csv", "datMeta_miRNA.csv", "datMeta_DNAm.csv")
+
+# Inizializza la lista per salvare gli ID di ogni file datMeta
+all_idx <- list()
 
 # Itera su ciascun file e salva gli ID in all_idx
 for (file in files) {
-    # Carica il file
-    datMeta <- read.csv(file, row.names = 1)
+    # Costruisci il percorso completo del file
+    file_path <- paste0(base_path, file)
     
-    # Salva gli ID dei pazienti (rownames) nella lista
-    all_idx[[file]] <- rownames(datMeta)
+    # Carica il file
+    if (file.exists(file_path)) {
+        datMeta <- read.csv(file_path, row.names = 1)
+        all_idx[[file]] <- rownames(datMeta)
+    } else {
+        stop(paste("File non trovato:", file_path))
+    }
 }
 
 # Trova gli ID comuni a tutti i file datMeta
@@ -45,6 +51,7 @@ common_ids <- Reduce(intersect, all_idx)
 # Stampa gli ID comuni
 print(paste("ID comuni trovati:", length(common_ids)))
 print(common_ids)
+
 
 
 

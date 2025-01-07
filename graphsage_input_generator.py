@@ -8,8 +8,9 @@ import csv
 import copy
 from networkx.readwrite import json_graph
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 from sklearn.impute import SimpleImputer
+from sklearn.impute import KNNImputer
 
 tcga_project = 'BRCA'
 os.makedirs('graphsage_input/{}'.format(tcga_project), exist_ok=True)
@@ -28,25 +29,42 @@ mRNA_data = mRNA_data[mRNA_data['patient'].isin(common_patients)]
 
 merged_data = pd.concat([DNAm_data, miRNA_data, mRNA_data], sort=False).drop_duplicates(subset='patient')
 
+# Raggruppa age_at_diagnosis per decadi
+merged_data['age_at_diagnosis'] = pd.to_numeric(merged_data['age_at_diagnosis'], errors='coerce')
+merged_data['age_at_diagnosis_years'] = merged_data['age_at_diagnosis'] / 365
+merged_data['age_at_diagnosis_decade'] = merged_data['age_at_diagnosis_years'].apply(
+    lambda x: "{}s".format(int(x // 10 * 10)) if pd.notnull(x) else np.nan)
+
 # Seleziona le colonne desiderate e gestisce i dati mancanti
-categorical_columns = ["race", "gender", "ethnicity", "age_at_diagnosis"]
+categorical_columns = ["race", "ethnicity", "age_at_diagnosis_decade"] #non uso gender per BRCA
 label_column = "paper_BRCA_Subtype_PAM50"
 selected_columns = ["patient"] + categorical_columns + [label_column]
-merged_data = merged_data[selected_columns].replace("not reported", "nan")
+merged_data = merged_data[selected_columns].replace("not reported", np.nan)
 
-merged_data[categorical_columns] = merged_data[categorical_columns].astype(str)
+# Conteggio delle occorrenze della stringa "nan" per ogni colonna (test: per capire quanti valori nulli in ogni categoria)
+# nan_string_counts = (merged_data[categorical_columns] == 'nan').sum()
+# print("Conteggio delle occorrenze della stringa 'nan' per ogni colonna:")
+# print(nan_string_counts)
 
-# Codifica le colonne categoriche in formato one-hot
-imputer = SimpleImputer(strategy='constant', fill_value='nan')
+#  Codifica le colonne categoriche in formato one-hot
+imputer = SimpleImputer(strategy='most_frequent')
 encoded_data = imputer.fit_transform(merged_data[categorical_columns])
 
 # Stampa il numero di categorie e le categorie per ogni colonna (test: capire quali sono le categorie uniche per ogni colonna prima di applicare l'encoder)
-# for col in categorical_columns:
-#     unique_values = np.unique(encoded_data[:, categorical_columns.index(col)])
-#     print("Colonna '{0}' ha {1} categorie: {2}". format(col, len(unique_values), unique_values))
+for col in categorical_columns:
+    unique_values = np.unique(encoded_data[:, categorical_columns.index(col)])
+    print("Colonna '{0}' ha {1} categorie: {2}". format(col, len(unique_values), unique_values))
 
 encoder = OneHotEncoder(sparse=False)
 encoded_features = encoder.fit_transform(encoded_data)
+
+# Stampa le nuove colonne create dall'encoder senza troncare
+np.set_printoptions(threshold=np.inf)
+print("Encoded features:\n", encoded_features)
+
+# Conteggio dei valori nan post encoding
+nan_count = np.isnan(encoded_features).sum()
+print("Conteggio dei valori nan post encoding: {}".format(nan_count))
 
 # Codifica le etichette in formato one-hot
 labels = merged_data[label_column].astype(str)
@@ -76,6 +94,8 @@ print('Features of patients successfully saved.')
 
 # Salva merged_data come CSV
 # merged_data.to_csv('merged_data.csv', index=False)
+
+np.savetxt('merged_data.txt', encoded_features, delimiter=',', fmt='%s')
 
 # Salva un pddata come CSV
 # labels_one_hot_df = pd.DataFrame(labels_one_hot)

@@ -26,6 +26,7 @@ capire anche perchè nella shape le colonne vanno a +1, mentre le righe no
 			L'altro numero (1083) considera tutti i pazienti e non solo quelli in comune nei tre file.
 			devo far in modo che per ogni paziente salvi solo una volta le categorical column e la label, e non salvi le restanti colonne 
 		filtrare e unire i file
+		considerare l'attributo dell'età diviso in decade
 		gestire gli NA -> nel file c'erano siano 'not reported' che 'nan', sono diventati tutti 'nan'. I valori vuoti diventeranno 'nan'
 		codifica one hot sulle features. si creano molti elementi per via della features sull'età della diagniosi.
 		codifica one hot delle label.
@@ -42,11 +43,15 @@ capire anche perchè nella shape le colonne vanno a +1, mentre le righe no
 		altra cosa che mi chiedo è: ma su mogdx, quei valori, si riferiscono a training, validazione o test? inoltre avendo cambiato i dati, vanno bene lo stesso le percentuali che uso per dividere questi set? -> ho cambiato per come vengono splittati su mogdx
 
 
-		gestione degli archi pesati: 
-			sembra che solo il modello non supervisionato li gestisce
-			provare a cambiare snf.to.graph per creare il grafo da dare a graphsage direttamente dal preprocessing di mongdx
+		gestione degli archi pesati: 		
+		creazione grafo g da mogdx con snf.to.graph
+			ho creato il grafo solo coi collegamenti con snf.to.graph di mogdx
+		*****	questo grafo devo convertirlo nel grafo che deve essere utilizzato da graphsage aggiungendo label, features (entrambi one hot) e poi le etichette per il val e test
+			capire se e come rimuovere le colonne color dei grafi creati su mogdx
 			
-		da fare: l'età delle feautures gestirla in modo più intelligente-> considerare gruppi di 10 anni 
+
+
+stato dell'arte: altri lavori che fanno una cosa simili a quello che sto facendo io
 		
 	
 

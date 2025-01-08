@@ -38,54 +38,13 @@ print(df_DNAm_cpgs.shape, df_miRNA_tg_transpose.shape, df_mRNA_tg_transpose.shap
 # Trova gli indici comuni tra i dataframe di ogni omica
 common_indices = np.intersect1d(np.intersect1d(df_DNAm_cpgs.index, df_miRNA_tg_transpose.index), df_mRNA_tg_transpose.index)
 print("Common indices:", len(common_indices)) #test
+print("Common indices:", common_indices) #test
+
 
 # Filtra il dataframe mantenendo solo i campioni comuni
 df_DNAm_cpgs = df_DNAm_cpgs.loc[common_indices]
 df_miRNA_tg_transpose = df_miRNA_tg_transpose.loc[common_indices]
 df_mRNA_tg_transpose = df_mRNA_tg_transpose.loc[common_indices]
-
-# def calculate_n_components(df, proportion=1):
-#     """
-#     Calcola il numero di componenti da mantenere, tenendo conto che n_components non deve superare il numero di righe.
-    
-#     df: Il dataframe con i dati.
-#     proportion: La proporzione delle colonne da mantenere.
-#     return: Il numero di componenti da usare nell'RSVD.
-#     """
-#     n_components = min(int(df.shape[0] * proportion), int(df.shape[1] * proportion)) - 1  # Calcola il numero di componenti
-#     return n_components
-
-# def apply_rsvd(data_matrix, n_components):
-#     """
-#     Applica RSVD su un set di dati.
-
-#     data_matrix: DataFrame con dati multi-omici.
-#     n_components: Numero di componenti da mantenere dopo la riduzione dimensionale.
-#     return: Il dataframe con dimensionalità ridotta. 
-#     """
-#     # Estrae la matrice dai dati
-#     X = np.array(data_matrix.iloc[:, 1:], dtype=np.float64)
-    
-#     # Applica RSVD
-#     U, Sigma, VT = randomized_svd(X, n_components=n_components, random_state=42)
-    
-#     # Proietta i dati nello spazio ridotto
-#     X_reduced = U @ np.diag(Sigma)
-    
-#     # Restituisce il risultato come DataFrame
-#     return pd.DataFrame(X_reduced, index=data_matrix.index)
-
-# n_components_mirna = calculate_n_components(df_mirna, proportion=0.2)  # 20% per miRNA
-# n_components_rnaseq = calculate_n_components(df_rnaseq, proportion=0.5)  # 50% per RNASeq
-# n_components_rppa = calculate_n_components(df_rppa, proportion=0.2)  # 20% per RPPA
-
-# # Applichiamo RSVD su ogni tipo di dato
-# df_mirna_reduced = apply_rsvd(df_mirna, n_components_mirna)
-# df_rnaseq_reduced = apply_rsvd(df_rnaseq, n_components_rnaseq)
-# df_rppa_reduced = apply_rsvd(df_rppa, n_components_rppa)
-
-# print("Shape dopo RSVD:")
-# print(df_mirna_reduced.shape, df_rnaseq_reduced.shape, df_rppa_reduced.shape) #, df_methy_reduced.shape)
 
 # Calcolo delle matrici di affinità
 affinity_networks_DNAm = snf.make_affinity(df_DNAm_cpgs, metric='euclidean', K=20, mu=0.5, normalize=True)
@@ -110,3 +69,9 @@ print(f"Fused affinity networks created for {tcga_project}, shape: {fused_affini
 
 # Salva la matrice di affinità fusa in npy
 np.save(f'affinity_matrices/{tcga_project}/fused_affinity_matrix.npy', fused_affinity_matrix)
+
+# Aggiungi gli id dei pazienti come etichette di riga e colonna
+fused_affinity_matrix_df = pd.DataFrame(fused_affinity_matrix, index=common_indices, columns=common_indices)
+
+# Salva la matrice di affinità fusa con etichette in CSV
+fused_affinity_matrix_df.to_csv(f'affinity_matrices/{tcga_project}/fused_affinity_matrix_with_id.csv')

@@ -33,7 +33,7 @@ merged_data = pd.concat([DNAm_data, miRNA_data, mRNA_data], sort=False).drop_dup
 merged_data['age_at_diagnosis'] = pd.to_numeric(merged_data['age_at_diagnosis'], errors='coerce')
 merged_data['age_at_diagnosis_years'] = merged_data['age_at_diagnosis'] / 365
 merged_data['age_at_diagnosis_decade'] = merged_data['age_at_diagnosis_years'].apply(
-    lambda x: "{}s".format(int(x // 10 * 10)) if pd.notnull(x) else np.nan)
+    lambda x: "{}".format(int(x // 10 * 10)) if pd.notnull(x) else np.nan)
 
 # Seleziona le colonne desiderate e gestisce i dati mancanti
 categorical_columns = ["race", "ethnicity", "age_at_diagnosis_decade"] #non uso gender per BRCA
@@ -51,20 +51,12 @@ imputer = SimpleImputer(strategy='most_frequent')
 encoded_data = imputer.fit_transform(merged_data[categorical_columns])
 
 # Stampa il numero di categorie e le categorie per ogni colonna (test: capire quali sono le categorie uniche per ogni colonna prima di applicare l'encoder)
-for col in categorical_columns:
-    unique_values = np.unique(encoded_data[:, categorical_columns.index(col)])
-    print("Colonna '{0}' ha {1} categorie: {2}". format(col, len(unique_values), unique_values))
+# for col in categorical_columns:
+#     unique_values = np.unique(encoded_data[:, categorical_columns.index(col)])
+#     print("Colonna '{0}' ha {1} categorie: {2}". format(col, len(unique_values), unique_values))
 
 encoder = OneHotEncoder(sparse=False)
 encoded_features = encoder.fit_transform(encoded_data)
-
-# Stampa le nuove colonne create dall'encoder senza troncare
-np.set_printoptions(threshold=np.inf)
-print("Encoded features:\n", encoded_features)
-
-# Conteggio dei valori nan post encoding
-nan_count = np.isnan(encoded_features).sum()
-print("Conteggio dei valori nan post encoding: {}".format(nan_count))
 
 # Codifica le etichette in formato one-hot
 labels = merged_data[label_column].astype(str)
@@ -92,14 +84,9 @@ print('Class mapping successfully saved.')
 np.save('{}-feats.npy'.format(log_dir), encoded_features)
 print('Features of patients successfully saved.')
 
-# Salva merged_data come CSV
-# merged_data.to_csv('merged_data.csv', index=False)
-
-np.savetxt('merged_data.txt', encoded_features, delimiter=',', fmt='%s')
-
-# Salva un pddata come CSV
-# labels_one_hot_df = pd.DataFrame(labels_one_hot)
-# labels_one_hot_df.to_csv('labels_one_hot_df.csv', index=False)
+# Salva il file delle features come dataframe id_paziente x features
+df_encoded_features = pd.DataFrame(encoded_features, index=node_ids)
+df_encoded_features.to_csv('{}-features_df.csv'.format(log_dir))
 
 # Carica la matrice di affinità fusa
 affinity_matrix = np.load('affinity_matrices/{}/fused_affinity_matrix.npy'.format(tcga_project))
@@ -144,7 +131,7 @@ def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_na
     for node in val_nodes:
         G.node[node]['val'] = True
         
-    # Salva file dei nodi e delle loro etichette (test per capire se le label corrispondono)
+    # Salva file dei nodi e delle loro etichette (test: per capire se le label corrispondono)
 #     with open('nodi_etichette.txt', 'w') as f:
 #         f.write("Nodi e le loro etichette dopo l'aggiunta al grafo:\n")
 #         for node_id, data in G.nodes(data=True):

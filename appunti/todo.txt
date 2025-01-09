@@ -46,9 +46,18 @@ capire anche perchè nella shape le colonne vanno a +1, mentre le righe no
 		gestione degli archi pesati: 		
 		creazione grafo g da mogdx con snf.to.graph
 			ho creato il grafo solo coi collegamenti con snf.to.graph di mogdx
-		*****	questo grafo devo convertirlo nel grafo che deve essere utilizzato da graphsage aggiungendo label, features (entrambi one hot) e poi le etichette per il val e test
+			questo grafo devo convertirlo nel grafo che deve essere utilizzato da graphsage aggiungendo label, features (entrambi one hot) e poi le etichette per il val e test
+				in graphsage-input-generator ho ordinato gli id in ordine alfabetico così da risultare coerente col grafo csv
 			capire se e come rimuovere le colonne color dei grafi creati su mogdx
+
+		
+		in pratica sono 2 esperimenti: 1) quello che stai facendo adesso, ciò ti calcoli le matrici di similarità con affinity graph e usi SNF di python per integrare. Poi usi 		snf.to.graph per sparsificare. 2) usi la pipeli di mogdx cioè basta che fai girare knn_to_graph.R + SNF.R, cioè gli script già disponibili.
+		nel secondo però devi vedere appunto come usare solo i 696 pazienti in comune
+		la differenza sta in come vengono create le matrici di affinità delle singole omiche. Nel primo caso usi la solita scaled exponential e poi integri
+		snel secondo caso usi similarità differenti e sparsifichi anche le singole omiche, non solo quella integrata
+		la mia idea è che confrontando l exp 2 va mogdx, siccome usiamo la stessa costruzione del grafo integrato, ci permette meglio di capire se graphsage+clinica è meglio di gcn-mme (che è la gnn di mogdx)
 			
+******da fare: matrice di confusione (per quanto dice il paper di mogdx, dovrebbe essere la normal-type), aggiungere metriche "weighted F1" e "accuracy"  e plot di val e test
 
 
 stato dell'arte: altri lavori che fanno una cosa simili a quello che sto facendo io
@@ -60,7 +69,6 @@ leggere paper di MOGONET e MoGCN: controllare se i risultati sono gli stessi o q
 
 leggere file doc di jessica dove indica le criticità del preprocessing
 
-******************laurea a febbraio possibile?
 
 
 riordinare appunti in ordine di creazione - aggiungere numerino tipo capitoli
@@ -68,5 +76,6 @@ cambiare i requirements su github
 sul git manca **MODIFICHE.md**, o comunque le modifiche al codice sia snf che graphsage
 	snf: cercare 'modifiche' sul file versioneer.py (sul server non è servito)
 	utils (graphsage). riga 70
+	anche su mogdx ci sono delle modifiche *****
 
  

@@ -16,6 +16,87 @@ tcga_project = 'BRCA'
 os.makedirs('graphsage_input/{}'.format(tcga_project), exist_ok=True)
 log_dir = 'graphsage_input/{0}/{0}'.format(tcga_project)
 
+def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_names):
+    G = nx.Graph()
+
+    # Se i nodi sono rappresentati come un array numpy, convertili in un DataFrame
+    if isinstance(feats_data, np.ndarray):
+        feats_data_df = pd.DataFrame(feats_data, index=patient_ids, columns=feature_names)
+
+    # Aggiungi i nodi al grafo
+    for node_id, label in node_data.items():
+        features = feats_data_df.loc[node_id].tolist()
+        G.add_node(node_id, label=label, features=features, val=False, test=False)
+        
+    # Stampa i nodi e le loro etichette (test)
+#     print("Nodi e le loro etichette dopo l'aggiunta al grafo:")
+#     for node_id, label in node_data.items():
+#         print("Node ID: {0}, Label: {1}".format(node_id, label))
+            
+    # Aggiungi gli archi al grafo
+    num_nodes = affinity_matrix.shape[0]
+    for i in range(num_nodes):
+        for j in range(i+1, num_nodes):
+            if affinity_matrix[i, j] > 0:
+                G.add_edge(node_ids[i], node_ids[j], train_removed=False, test_removed=False)
+
+    # Suddivide i nodi in set di addestramento, validazione e test
+    one_hot_labels = [data['label'] for _, data in G.nodes(data=True)] # array delle etichette dei nodi in formato one-hot
+    labels = np.argmax(one_hot_labels, axis=1) # array delle etichette dei nodi in formato intero
+
+    random_state=42
+
+    train_nodes, test_nodes = train_test_split(list(G.nodes()), test_size=0.2, shuffle=True, stratify=labels, random_state=random_state) # 10% test set del set completo (20% per fare uguale a mogdx)
+    for node in test_nodes:
+        G.node[node]['test'] = True
+
+    train_labels = np.argmax([G.node[node].get('label') for node in train_nodes], axis=1) # array delle etichette dei nodi di train in formato intero
+
+    train_nodes, val_nodes = train_test_split(train_nodes, test_size=0.15, shuffle=True, stratify=train_labels, random_state=random_state) # 22,5% val set del set completo, train set 67,5% del set completo (val set 12% e train set 68% come mogdx)
+    for node in val_nodes:
+        G.node[node]['val'] = True
+        
+    # Salva file dei nodi e delle loro etichette (test: per capire se le label corrispondono)
+#     with open('nodi_etichette.txt', 'w') as f:
+#         f.write("Nodi e le loro etichette dopo l'aggiunta al grafo:\n")
+#         for node_id, data in G.nodes(data=True):
+#             f.write("Node ID: {0}, Label: {1}, Val: {2}, Test: {3}\n".format(node_id, data['label'], data['val'], data['test']))
+    
+    return G
+
+def create_graph_from_csv(g_csv, node_data, feats_data, patient_ids, feature_names):    
+    # Crea il grafo
+    G = nx.Graph()
+    
+    # Aggiungi i nodi con etichette e caratteristiche
+    if isinstance(feats_data, np.ndarray):
+        feats_data_df = pd.DataFrame(feats_data, index=patient_ids, columns=feature_names)
+
+    for node_id, label in node_data.items():
+        features = feats_data_df.loc[node_id].tolist()
+        G.add_node(node_id, label=label, features=features, val=False, test=False)
+        
+    # Aggiungi gli archi dal CSV
+    for _, row in g_csv.iterrows():
+        G.add_edge(row['from_name'], row['to_name'], train_removed=False, test_removed=False)
+    
+    # Suddividi i nodi in train, validation e test
+    one_hot_labels = [data['label'] for _, data in G.nodes(data=True)]
+    labels = np.argmax(one_hot_labels, axis=1)
+    
+    random_state = 42
+    train_nodes, test_nodes = train_test_split(list(G.nodes()), test_size=0.2, shuffle=True, stratify=labels, random_state=random_state)
+    for node in test_nodes:
+        G.node[node]['test'] = True
+    
+    train_labels = np.argmax([G.node[node].get('label') for node in train_nodes], axis=1)
+
+    train_nodes, val_nodes = train_test_split(train_nodes, test_size=0.15, shuffle=True, stratify=train_labels, random_state=random_state)
+    for node in val_nodes:
+        G.node[node]['val'] = True
+    
+    return G
+
 # Carica i dati delle omiche da utilizzare
 DNAm_data = pd.read_csv('../MOGDx/data/TCGA/{}/raw/datMeta_DNAm.csv'.format(tcga_project))
 miRNA_data = pd.read_csv('../MOGDx/data/TCGA/{}/raw/datMeta_miRNA.csv'.format(tcga_project))
@@ -28,6 +109,8 @@ miRNA_data = miRNA_data[miRNA_data['patient'].isin(common_patients)]
 mRNA_data = mRNA_data[mRNA_data['patient'].isin(common_patients)]
 
 merged_data = pd.concat([DNAm_data, miRNA_data, mRNA_data], sort=False).drop_duplicates(subset='patient')
+merged_data = merged_data.sort_values('patient')
+merged_data = merged_data.reset_index(drop=True)
 
 # Raggruppa age_at_diagnosis per decadi
 merged_data['age_at_diagnosis'] = pd.to_numeric(merged_data['age_at_diagnosis'], errors='coerce')
@@ -90,60 +173,12 @@ df_encoded_features.to_csv('{}-features_df.csv'.format(log_dir))
 
 # Carica la matrice di affinità fusa
 affinity_matrix = np.load('affinity_matrices/{}/fused_affinity_matrix.npy'.format(tcga_project))
-
-def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_names):
-    G = nx.Graph()
-
-    # Se i nodi sono rappresentati come un array numpy, convertili in un DataFrame
-    if isinstance(feats_data, np.ndarray):
-        feats_data_df = pd.DataFrame(feats_data, index=patient_ids, columns=feature_names)
-
-    # Aggiungi i nodi al grafo
-    for node_id, label in node_data.items():
-        features = feats_data_df.loc[node_id].tolist()
-        G.add_node(node_id, label=label, features=features, val=False, test=False)
-        
-    # Stampa i nodi e le loro etichette (test)
-#     print("Nodi e le loro etichette dopo l'aggiunta al grafo:")
-#     for node_id, label in node_data.items():
-#         print("Node ID: {0}, Label: {1}".format(node_id, label))
-            
-    # Aggiungi gli archi al grafo
-    num_nodes = affinity_matrix.shape[0]
-    for i in range(num_nodes):
-        for j in range(i+1, num_nodes):
-            if affinity_matrix[i, j] > 0:
-                G.add_edge(node_ids[i], node_ids[j], train_removed=False, test_removed=False)
-
-    # Suddivide i nodi in set di addestramento, validazione e test
-    one_hot_labels = [data['label'] for _, data in G.nodes(data=True)] # array delle etichette dei nodi in formato one-hot
-    labels = np.argmax(one_hot_labels, axis=1) # array delle etichette dei nodi in formato intero
-
-    random_state=42
-
-    train_nodes, test_nodes = train_test_split(list(G.nodes()), test_size=0.2, shuffle=True, stratify=labels, random_state=random_state) # 10% test set del set completo (20% per fare uguale a mogdx)
-    for node in test_nodes:
-        G.node[node]['test'] = True
-
-    train_labels = np.argmax([G.node[node].get('label') for node in train_nodes], axis=1) # array delle etichette dei nodi di train in formato intero
-
-    train_nodes, val_nodes = train_test_split(train_nodes, test_size=0.15, shuffle=True, stratify=train_labels, random_state=random_state) # 22,5% val set del set completo, train set 67,5% del set completo (val set 12% e train set 68% come mogdx)
-    for node in val_nodes:
-        G.node[node]['val'] = True
-        
-    # Salva file dei nodi e delle loro etichette (test: per capire se le label corrispondono)
-#     with open('nodi_etichette.txt', 'w') as f:
-#         f.write("Nodi e le loro etichette dopo l'aggiunta al grafo:\n")
-#         for node_id, data in G.nodes(data=True):
-#             f.write("Node ID: {0}, Label: {1}, Val: {2}, Test: {3}\n".format(node_id, data['label'], data['val'], data['test']))
-    
-    return G
                 
 # Salva il grafo (G) come JSON
-G = create_graph(affinity_matrix, class_map, encoded_features, node_ids, encoder.get_feature_names(categorical_columns))   
-with open('{}-G.json'.format(log_dir), 'w') as f:
-    json.dump(json_graph.node_link_data(G), f)
-print('Graph successfully saved.')
+# G = create_graph(affinity_matrix, class_map, encoded_features, node_ids, encoder.get_feature_names(categorical_columns))   
+# with open('{}-G.json'.format(log_dir), 'w') as f:
+#     json.dump(json_graph.node_link_data(G), f)
+# print('Graph successfully saved.')
 
 # Stampa alcune informazioni sui nodi per verificare la creazione corretta (test: per verificare che label e features siano assegnate in modo corretto nel grafo)
 # print("Informazioni sui nodi:")
@@ -151,3 +186,11 @@ print('Graph successfully saved.')
 #     if i >= 5:  # Stampa solo i primi 10 nodi per esempio
 #         break
 #     print("Node ID: {0}, Features: {1}, Label: {2}".format(node_id, data.get('features'), data.get('label')))
+
+# Converte il grafo csv in un grafo json completo di caratteristiche e label e split set
+g_csv = pd.read_csv('{}-G.csv'.format(log_dir))
+G = create_graph_from_csv(g_csv, class_map, encoded_features, node_ids, encoder.get_feature_names(categorical_columns))
+
+with open('{}-G.json'.format(log_dir), 'w') as f:
+    json.dump(json_graph.node_link_data(G), f)
+print('Graph successfully saved.')

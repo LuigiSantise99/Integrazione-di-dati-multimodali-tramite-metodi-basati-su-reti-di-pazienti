@@ -40,7 +40,6 @@ common_indices = np.intersect1d(np.intersect1d(df_DNAm_cpgs.index, df_miRNA_tg_t
 print("Common indices:", len(common_indices)) #test
 print("Common indices:", common_indices) #test
 
-
 # Filtra il dataframe mantenendo solo i campioni comuni
 df_DNAm_cpgs = df_DNAm_cpgs.loc[common_indices]
 df_miRNA_tg_transpose = df_miRNA_tg_transpose.loc[common_indices]

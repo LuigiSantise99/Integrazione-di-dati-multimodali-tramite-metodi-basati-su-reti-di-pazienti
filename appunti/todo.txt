@@ -57,7 +57,23 @@ capire anche perchè nella shape le colonne vanno a +1, mentre le righe no
 		snel secondo caso usi similarità differenti e sparsifichi anche le singole omiche, non solo quella integrata
 		la mia idea è che confrontando l exp 2 va mogdx, siccome usiamo la stessa costruzione del grafo integrato, ci permette meglio di capire se graphsage+clinica è meglio di gcn-mme (che è la gnn di mogdx)
 			
-******da fare: matrice di confusione (per quanto dice il paper di mogdx, dovrebbe essere la normal-type), aggiungere metriche "weighted F1" e "accuracy"  e plot di val e test
+******da fare: matrice di confusione (per quanto dice il paper di mogdx, dovrebbe essere la normal-type),Dobbiamo sapere quanti campioni abbiamo in ogni classe, 
+	 aggiungere metriche "weighted F1"+ e "accuracy"+  e plot di val+ e test(no possibile lo calcola solo alla fine dell'ottimizzazione), ++
+
+Totale di pazienti per ogni label:
+LumA      394
+LumB      125
+Basal     104
+Her2       43
+Normal     30
+
+matrice di confusione:
+	Basal	Her2	LumA	LumB	Normal
+Basal	21	0	0	0	0
+Her2	0	7	2	0	0
+LumA	0	0	79	0	0
+LumB	0	1	23	1	0
+Normal	1	0	5	0	0
 
 
 stato dell'arte: altri lavori che fanno una cosa simili a quello che sto facendo io
@@ -73,7 +89,7 @@ leggere file doc di jessica dove indica le criticità del preprocessing
 
 riordinare appunti in ordine di creazione - aggiungere numerino tipo capitoli
 cambiare i requirements su github
-sul git manca **MODIFICHE.md**, o comunque le modifiche al codice sia snf che graphsage
+sul git manca **MODIFICHE.md**, o comunque le modifiche al codice sia snf che graphsage che mogdx
 	snf: cercare 'modifiche' sul file versioneer.py (sul server non è servito)
 	utils (graphsage). riga 70
 	anche su mogdx ci sono delle modifiche *****

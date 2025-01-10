@@ -147,8 +147,11 @@ label_encoder = OneHotEncoder(sparse=False)
 labels_one_hot = label_encoder.fit_transform(labels.values.reshape(-1, 1))
 
 # Stampa il numero di categorie e le categorie per le label (test: capire quali sono le label uniche)
-# label_unique_values = np.unique(labels)
-# print("Colonna '{0}' ha {1} categorie: {2}".format(label_column, len(label_unique_values), label_unique_values))
+label_unique_values = np.unique(labels)
+print("Colonna '{0}' ha {1} categorie: {2}".format(label_column, len(label_unique_values), label_unique_values))
+# Conta il numero di pazienti per ogni label (test: per capire il totale di pazienti per ogni etichetta)
+print("Totale di pazienti per ogni label:")
+print(merged_data[label_column].value_counts())
 
 # Crea la mappa degli ID dei nodi
 node_ids = merged_data["patient"].tolist()

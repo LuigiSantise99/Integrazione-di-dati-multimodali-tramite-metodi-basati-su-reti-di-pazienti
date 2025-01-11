@@ -5,7 +5,7 @@ import pandas as pd
 import json
 import os
 import csv
-import copy
+from collections import Counter, OrderedDict
 from networkx.readwrite import json_graph
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
@@ -94,6 +94,25 @@ def create_graph_from_csv(g_csv, node_data, feats_data, patient_ids, feature_nam
     train_nodes, val_nodes = train_test_split(train_nodes, test_size=0.15, shuffle=True, stratify=train_labels, random_state=random_state)
     for node in val_nodes:
         G.node[node]['val'] = True
+
+    # Conteggio nodi in ciascun set e cardinalità delle label (test: quanti nodi per ogni set e quanti nodi per ogni label in ogni set)
+#     label_mapping = {0: "Basal", 1: "Her2", 2: "LumA", 3: "LumB", 4: "Normal"}
+#     ordered_labels = ["Basal", "Her2", "LumA", "LumB", "Normal"]
+#     train_nodes = [node for node in G.nodes() if not G.node[node].get('test') and not G.node[node].get('val')]
+#     val_nodes = [node for node in G.nodes() if G.node[node].get('val')]
+#     test_nodes = [node for node in G.nodes() if G.node[node].get('test')]
+#     print("Numero di nodi in training set: {}".format(len(train_nodes)))
+#     print("Numero di nodi in validation set: {}".format(len(val_nodes)))
+#     print("Numero di nodi in test set: {}".format(len(test_nodes)))
+    
+#     train_label_counts = OrderedDict((label, Counter([label_mapping[np.argmax(G.node[node]['label'])] for node in train_nodes]).get(label, 0)) for label in ordered_labels)
+#     val_label_counts = OrderedDict((label, Counter([label_mapping[np.argmax(G.node[node]['label'])] for node in val_nodes]).get(label, 0)) for label in ordered_labels)
+#     test_label_counts = OrderedDict((label, Counter([label_mapping[np.argmax(G.node[node]['label'])] for node in test_nodes]).get(label, 0)) for label in ordered_labels)
+
+#     print("Cardinalità delle label:")
+#     print("Training set: {}".format(train_label_counts))
+#     print("Validation set: {}".format(val_label_counts))
+#     print("Test set: {}".format(test_label_counts))
     
     return G
 
@@ -124,6 +143,75 @@ label_column = "paper_BRCA_Subtype_PAM50"
 selected_columns = ["patient"] + categorical_columns + [label_column]
 merged_data = merged_data[selected_columns].replace("not reported", np.nan)
 
+#test distribuzione++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.backends.backend_pdf import PdfPages
+
+# Inizializza un oggetto PDF se vuoi salvare come PDF
+save_as_pdf = True  # Cambia a False se preferisci PNG
+output_file = "feature_distributions_by_label.pdf" if save_as_pdf else "feature_distributions_by_label.png"
+
+# Determina il layout della griglia
+num_features = len(categorical_columns)
+cols = 2  # Numero di colonne nella griglia
+rows = (num_features + cols - 1) // cols  # Calcola il numero di righe necessarie
+
+# Configura la figura
+fig, axes = plt.subplots(rows, cols, figsize=(12, rows * 5), constrained_layout=True)
+
+# Appiattisci gli assi per iterazione semplice
+axes = axes.flatten()
+
+# Itera sulle colonne categoriche e genera un grafico per ognuna
+for idx, column in enumerate(categorical_columns):
+    ax = axes[idx]
+    
+    # Raggruppa i dati per le classi
+    grouped_data = merged_data.groupby(label_column)
+    categories = merged_data[column].dropna().unique()
+    
+    # Prepara i dati: conta le occorrenze di ciascuna categoria per ogni classe
+    data = {label: [group[group[column] == cat].shape[0] for cat in categories]
+            for label, group in grouped_data}
+    
+    # Crea il grafico
+    x = np.arange(len(data))  # Le etichette delle classi
+    width = 0.2  # Larghezza delle barre
+    
+    # Crea una mappa di colori per le categorie
+    colors = plt.cm.get_cmap("tab20", len(categories))  # Colori distinti per ogni categoria
+    
+    # Aggiungi le barre per ogni categoria (colori diversi per ogni categoria)
+    for i, (label, counts) in enumerate(data.items()):
+        ax.barh(x + i * width, counts, width, label=label, color=colors(i))  # Usa colori distinti
+    
+    # Etichette e titoli
+    ax.set_title("Distribuzione delle categorie per '{}'".format(column))
+    ax.set_xlabel("Conteggio")
+    ax.set_ylabel("Classi")
+    ax.set_yticks(x + width / 2)
+    ax.set_yticklabels([str(label) for label in data.keys()])
+    ax.legend(title="Classi")
+    
+# Rimuovi eventuali assi vuoti
+for idx in range(num_features, len(axes)):
+    fig.delaxes(axes[idx])
+
+# Salva come PNG o PDF
+if save_as_pdf:
+    with PdfPages(output_file) as pdf:
+        pdf.savefig(fig)
+else:
+    plt.savefig(output_file, dpi=300)
+
+print("Grafici salvati in: {}".format(output_file))
+
+
+
+
+#fine test
+
 # Conteggio delle occorrenze della stringa "nan" per ogni colonna (test: per capire quanti valori nulli in ogni categoria)
 # nan_string_counts = (merged_data[categorical_columns] == 'nan').sum()
 # print("Conteggio delle occorrenze della stringa 'nan' per ogni colonna:")
@@ -147,11 +235,11 @@ label_encoder = OneHotEncoder(sparse=False)
 labels_one_hot = label_encoder.fit_transform(labels.values.reshape(-1, 1))
 
 # Stampa il numero di categorie e le categorie per le label (test: capire quali sono le label uniche)
-label_unique_values = np.unique(labels)
-print("Colonna '{0}' ha {1} categorie: {2}".format(label_column, len(label_unique_values), label_unique_values))
-# Conta il numero di pazienti per ogni label (test: per capire il totale di pazienti per ogni etichetta)
-print("Totale di pazienti per ogni label:")
-print(merged_data[label_column].value_counts())
+# label_unique_values = np.unique(labels)
+# print("Colonna '{0}' ha {1} categorie: {2}".format(label_column, len(label_unique_values), label_unique_values))
+# # Conta il numero di pazienti per ogni label (test: per capire il totale di pazienti per ogni etichetta)
+# print("Totale di pazienti per ogni label:")
+# print(merged_data[label_column].value_counts())
 
 # Crea la mappa degli ID dei nodi
 node_ids = merged_data["patient"].tolist()

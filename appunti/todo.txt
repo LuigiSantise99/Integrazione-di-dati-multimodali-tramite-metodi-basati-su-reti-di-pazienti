@@ -61,19 +61,19 @@ capire anche perchè nella shape le colonne vanno a +1, mentre le righe no
 	 aggiungere metriche "weighted F1"+ e "accuracy"+  e plot di val+ e test(no possibile lo calcola solo alla fine dell'ottimizzazione), ++
 
 Totale di pazienti per ogni label:
-LumA      394
-LumB      125
 Basal     104
 Her2       43
+LumA      394
+LumB      125
 Normal     30
 
 matrice di confusione:
 	Basal	Her2	LumA	LumB	Normal
-Basal	21	0	0	0	0
-Her2	0	7	2	0	0
-LumA	0	0	79	0	0
+Basal	20	1	0	0	0
+Her2	0	9	0	0	0
+LumA	1	0	78	0	0
 LumB	0	1	23	1	0
-Normal	1	0	5	0	0
+Normal	1	2	3	0	0
 
 
 stato dell'arte: altri lavori che fanno una cosa simili a quello che sto facendo io

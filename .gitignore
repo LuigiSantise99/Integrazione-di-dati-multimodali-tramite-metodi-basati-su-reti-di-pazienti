@@ -8,3 +8,6 @@ graphsage_input/
 
 # test
 merged_data.csv
+
+# plot
+feature_distributions.pdf

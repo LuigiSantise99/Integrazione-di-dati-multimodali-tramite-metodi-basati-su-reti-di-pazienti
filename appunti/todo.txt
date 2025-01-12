@@ -44,21 +44,23 @@ capire anche perchè nella shape le colonne vanno a +1, mentre le righe no
 
 
 		gestione degli archi pesati: 		
-		creazione grafo g da mogdx con snf.to.graph
+		creazione grafo g da mogdx con snf.to.graph (k impostato a 20 sia nella creazione della matrice di affinità, sia in mogdx)
 			ho creato il grafo solo coi collegamenti con snf.to.graph di mogdx
 			questo grafo devo convertirlo nel grafo che deve essere utilizzato da graphsage aggiungendo label, features (entrambi one hot) e poi le etichette per il val e test
 				in graphsage-input-generator ho ordinato gli id in ordine alfabetico così da risultare coerente col grafo csv
 			capire se e come rimuovere le colonne color dei grafi creati su mogdx
 
 		
-		in pratica sono 2 esperimenti: 1) quello che stai facendo adesso, ciò ti calcoli le matrici di similarità con affinity graph e usi SNF di python per integrare. Poi usi 		snf.to.graph per sparsificare. 2) usi la pipeli di mogdx cioè basta che fai girare knn_to_graph.R + SNF.R, cioè gli script già disponibili.
-		nel secondo però devi vedere appunto come usare solo i 696 pazienti in comune
+		in pratica sono 2 esperimenti: 
+		1) quello che stai facendo adesso, ciò ti calcoli le matrici di similarità con affinity graph e usi SNF di python per integrare. Poi usi 		snf.to.graph per sparsificare. +
+		2) usi la pipeli di mogdx cioè basta che fai girare knn_to_graph.R + SNF.R, cioè gli script già disponibili. Però devi vedere appunto come usare solo i 696 pazienti in comune
 		la differenza sta in come vengono create le matrici di affinità delle singole omiche. Nel primo caso usi la solita scaled exponential e poi integri
 		snel secondo caso usi similarità differenti e sparsifichi anche le singole omiche, non solo quella integrata
 		la mia idea è che confrontando l exp 2 va mogdx, siccome usiamo la stessa costruzione del grafo integrato, ci permette meglio di capire se graphsage+clinica è meglio di gcn-mme (che è la gnn di mogdx)
 			
-******da fare: matrice di confusione (per quanto dice il paper di mogdx, dovrebbe essere la normal-type),Dobbiamo sapere quanti campioni abbiamo in ogni classe, 
+	fatto tutto. matrice di confusione+ (per quanto dice il paper di mogdx, dovrebbe essere la normal-type),Dobbiamo sapere quanti campioni abbiamo in ogni classe, 
 	 aggiungere metriche "weighted F1"+ e "accuracy"+  e plot di val+ e test(no possibile lo calcola solo alla fine dell'ottimizzazione), ++
+		grafici distribuzione delle categorie per ogni classe+
 
 Totale di pazienti per ogni label:
 Basal     104
@@ -84,7 +86,7 @@ stato dell'arte: altri lavori che fanno una cosa simili a quello che sto facendo
 leggere paper di MOGONET e MoGCN: controllare se i risultati sono gli stessi o quelli di mogdx li hanno fatti rigirare (tabella 2)
 
 leggere file doc di jessica dove indica le criticità del preprocessing
-
+capire se la libreria future è un problea durante l'adesramento, e i messaggi di warning quando snfpy in affinity-matrix.py
 
 
 riordinare appunti in ordine di creazione - aggiungere numerino tipo capitoli
@@ -93,5 +95,104 @@ sul git manca **MODIFICHE.md**, o comunque le modifiche al codice sia snf che gr
 	snf: cercare 'modifiche' sul file versioneer.py (sul server non è servito)
 	utils (graphsage). riga 70
 	anche su mogdx ci sono delle modifiche *****
+		seed in cvtrait
+		aggiunta funzione snf.to.graphfromPy
+		vedere sotto secondo esperimento > snf.r
 
- 
+
+
+file presentazione: 
+
+primo esperimento:
+	knn_graph_generation.R -> per avere datexpr e datmeta per ogni omica.
+	affinity_matrix.py -> prende datExpr generati nella pipeline di mogdx e crea la matrice di affinità fusa con snfpy con l'aggiunta degli id dei pazienti per ogni riga/col
+	graph_creation.R -> prende la matrice di affinità con id appena creata e crea il grafo con i vari collegamenti tra nodi, usa snf.to.graph.FromPy
+	graphsage_input_generator.py -> conversione grafo valido per graphsage + aggiunta feats, label e divisione in set (con features)
+	addestrare modello supervisionato graphsage
+	graphsage_input_generator.py -> conversione grafo valido per graphsage + aggiunta feats, label e divisione in set (senza features)
+	addestrare modello supervisionato graphsage
+
+
+secondo esperimento:
+	knn_graph_generation.R -> per avere grafo, datexpr e datmeta per ogni omica. (i grafi vanno spostati nella cartella MOGDx/Network/SNF)
+	SNF.R -> imposto modalities in base alle omiche che voglio considerare. Viene creato il grafo (mRNA_miRNA_DNAm_graph.csv) considerando la matrice di affinità fusa. (codice modificato per mantenere solo i pazienti in comune (696)) (cambiare destinazione grafo per farmelo trovare nella cartella inputfiles) 
+	graphsage_input_generator.py -> conversione grafo valido per graphsage + aggiunta feats, label e divisione in set (con features)
+	addestrare modello supervisionato graphsage
+	graphsage_input_generator.py -> conversione grafo valido per graphsage + aggiunta feats, label e divisione in set (senza features)
+	addestrare modello supervisionato graphsage
+
+TEST
+
+
+- Iperparametri:
+	+epoche: 50
+	+dropout: 0.4
+	+weight_decay: 0
+	+learning_rate: 0.001
+	+altre: 'model', 'graphsage_mean' 'max_degree', 128, , samples_1', 25, , samples_2', 25, , samples_3', 0, , dim_1', 128, , dim_2', 128, , random_context', True, , batch_size', 30, , 		sigmoid', False, identity_dim', 0, validate_iter', validate_batch_size', 64, gpu', 1,
+
+RISULTATI PRIMO ESPERIMENTO (con features)
+
+- ho usato la libreria snf di python (snfpy), per poi creare i collegamenti del grafo con snf.to.graph.FromPy, K=20, ho usato solo i top-genes
+- Il grafo per graphsage è stato creato con la presenza di features
+- metriche:
+	+val -> loss=0.63810 f1_micro=0.78571 f1_macro=0.56649 f1_weighted=0.72933 accuracy_score=0.78571 AUPRC_score=0.72385 AUC_score=0.74741 time=0.02726
+	+test -> loss=0.63533 f1_micro=0.75000 f1_macro=0.56245 f1_weighted=0.71279 accuracy_score=0.75000 AUPRC_score=0.60262 AUC_score=0.75211
+- matrice di confusione (ordine label:	Basal	Her2	LumA	LumB	Normal):
+[[20  0  1  0  0]
+ [ 0  8  1  0  0]
+ [ 1  0 71  6  1]
+ [ 0  3 16  6  0]
+ [ 1  2  3  0  0]]
+- plot: loss1
+
+
+RISULTATI PRIMO ESPERIMENTO (senza features)
+
+- ho usato la libreria snf di python (snfpy), per poi creare i collegamenti del grafo con snf.to.graph.FromPy, K=20, ho usato solo i top-genes
+- Il grafo per graphsage è stato creato senza la presenza di features, aggiungendo l'iperparametro --identity_dim 128
+- metriche:
+	+val -> loss=0.79734 f1_micro=0.79762 f1_macro=0.60728 f1_weighted=0.77086 accuracy_score=0.79762 AUPRC_score=0.73468 AUC_score=0.78235 time=0.05393
+	+test -> loss=0.60911 f1_micro=0.79286 f1_macro=0.75134 f1_weighted=0.78571 accuracy_score=0.79286 AUPRC_score=0.77693 AUC_score=0.82820
+- matrice di confusione (ordine label:	Basal	Her2	LumA	LumB	Normal):
+ [[21  0  0  0  0]
+ [ 0  6  1  1  1]
+ [ 1  0 69  9  0]
+ [ 0  0 14 11  0]
+ [ 1  1  0  0  4]]
+- plot: loss2
+
+
+
+RISULTATI SECONDO ESPERIMENTO (con features)
+
+- Ho generato il grafo con knn_graph_generation.R e ho usato l'snf fornita da mogdx (SNF.R), K=20, ho usato solo i top-genes
+- Il grafo per graphsage è stato creato con la presenza di features
+- metriche:
+	+val -> loss=0.46396 f1_micro=0.86905 f1_macro=0.69525 f1_weighted=0.84116 accuracy_score=0.86905 AUPRC_score=0.82302 AUC_score=0.81222 time=0.04401
+	+test -> loss=0.51694 f1_micro=0.81429 f1_macro=0.60740 f1_weighted=0.79670 accuracy_score=0.81429 AUPRC_score=0.73552 AUC_score=0.79202
+- matrice di confusione (ordine label:	Basal	Her2	LumA	LumB	Normal):
+ [[20  1  0  0  0]
+ [ 0  7  1  1  0]
+ [ 0  1 73  5  0]	
+ [ 0  5  6 14  0]
+ [ 2  1  3  0  0]]
+- plot: loss3
+
+
+
+RISULTATI SECONDO ESPERIMENTO (senza features)
+
+- Ho generato il grafo con knn_graph_generation.R e ho usato l'snf fornita da mogdx (SNF.R), K=20, ho usato solo i top-genes
+- Il grafo per graphsage è stato creato senza la presenza di features, aggiungendo l'iperparametro --identity_dim 128
+- metriche:
+	+val -> loss=0.44094 f1_micro=0.88095 f1_macro=0.80823 f1_weighted=0.88028 accuracy_score=0.88095 AUPRC_score=0.82656 AUC_score=0.89006 time=0.06273
+	+test -> loss=0.53378 f1_micro=0.84286 f1_macro=0.72184 f1_weighted=0.83046 accuracy_score=0.84286 AUPRC_score=0.79949 AUC_score=0.82918
+- matrice di confusione (ordine label:	Basal	Her2	LumA	LumB	Normal):
+ [[20  1  0  0  0]
+ [ 0  8  1  0  0]
+ [ 0  0 73  6  0]
+ [ 0  2  7 16  0]
+ [ 1  0  4  0  1]]
+- plot: loss4
+

@@ -37,8 +37,8 @@ print(df_DNAm_cpgs.shape, df_miRNA_tg_transpose.shape, df_mRNA_tg_transpose.shap
 
 # Trova gli indici comuni tra i dataframe di ogni omica
 common_indices = np.intersect1d(np.intersect1d(df_DNAm_cpgs.index, df_miRNA_tg_transpose.index), df_mRNA_tg_transpose.index)
-print("Common indices:", len(common_indices)) #test
-print("Common indices:", common_indices) #test
+# print("Common indices:", len(common_indices)) #test
+# print("Common indices:", common_indices) #test
 
 # Filtra il dataframe mantenendo solo i campioni comuni
 df_DNAm_cpgs = df_DNAm_cpgs.loc[common_indices]

@@ -267,7 +267,8 @@ affinity_matrix = np.load('affinity_matrices/{}/fused_affinity_matrix.npy'.forma
 #     print("Node ID: {0}, Features: {1}, Label: {2}".format(node_id, data.get('features'), data.get('label')))
 
 # Converte il grafo csv in un grafo json completo di caratteristiche e label e split set
-g_csv = pd.read_csv('{}-G.csv'.format(log_dir))
+g_csv = pd.read_csv('{}-G.csv'.format(log_dir)) #se uso snfpy
+# g_csv = pd.read_csv('graphsage_input/BRCA/mRNA_miRNA_DNAm_graph.csv'.format(log_dir)) #se affinity_matrix creata seguendo pipeline di mogdx (nomde DA CAMBIARE DURANTE SALVATAGGIO)
 G = create_graph_from_csv(g_csv, class_map, encoded_features, node_ids, encoder.get_feature_names(categorical_columns))
 
 with open('{}-G.json'.format(log_dir), 'w') as f:

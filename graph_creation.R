@@ -10,8 +10,10 @@ project <- 'BRCA'
 index_col <- 'patient'
 modalities <- c( 'DNAm' , 'miRNA' , 'mRNA' )
 
-W <- read.csv(file.path("affinity_matrices", project, "fused_affinity_matrix_with_id.csv"), row.names = 1)
-features_df <- read.csv(file.path("graphsage_input", project, paste0(project, "-features_df.csv")), row.names = 1)
+W <- read.csv(file.path("affinity_matrices", project, "fused_affinity_matrix_with_id.csv"), row.names = 1) #ho usato snfpy
+
+# Non viene usato perchè le features vengono aggiunte quando viene ultimato il grafo
+# features_df <- read.csv(file.path("graphsage_input", project, paste0(project, "-features_df.csv")), row.names = 1) 
 
 all_idx <- rownames(W)
 
@@ -25,7 +27,7 @@ datMeta <- datMeta[!(duplicated(datMeta)),]
 rownames(datMeta) <- datMeta[[index_col]]
 print(dim(datMeta))
 
-g <- snf.to.graph(W , datMeta , all_idx)
+g <- snf.to.graph.fromPy(W , datMeta , all_idx)
 print(length(V(g)))
 
 

@@ -135,7 +135,7 @@ merged_data = merged_data.reset_index(drop=True)
 merged_data['age_at_diagnosis'] = pd.to_numeric(merged_data['age_at_diagnosis'], errors='coerce')
 merged_data['age_at_diagnosis_years'] = merged_data['age_at_diagnosis'] / 365
 merged_data['age_at_diagnosis_decade'] = merged_data['age_at_diagnosis_years'].apply(
-    lambda x: "{}".format(int(x // 10 * 10)) if pd.notnull(x) else np.nan)
+    lambda x: "{}".format(int(x // 10 * 10)) if pd.notnull(x) else np.nan) 
 
 # Seleziona le colonne desiderate e gestisce i dati mancanti
 categorical_columns = ["race", "ethnicity", "age_at_diagnosis_decade"] #non uso gender per BRCA
@@ -143,73 +143,61 @@ label_column = "paper_BRCA_Subtype_PAM50"
 selected_columns = ["patient"] + categorical_columns + [label_column]
 merged_data = merged_data[selected_columns].replace("not reported", np.nan)
 
-#test distribuzione++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.backends.backend_pdf import PdfPages
+#creazione dei grafi (test: distribuzione delle categorie per ogni label) *per funziona sostituire np.nan nella stringa 'np.nan'
+# import matplotlib.pyplot as plt
+# from matplotlib.backends.backend_pdf import PdfPages
 
-# Inizializza un oggetto PDF se vuoi salvare come PDF
-save_as_pdf = True  # Cambia a False se preferisci PNG
-output_file = "feature_distributions_by_label.pdf" if save_as_pdf else "feature_distributions_by_label.png"
+# save_as_pdf = True
+# output_file = "feature_distributions.pdf" if save_as_pdf else "feature_distributions.png"
 
-# Determina il layout della griglia
-num_features = len(categorical_columns)
-cols = 2  # Numero di colonne nella griglia
-rows = (num_features + cols - 1) // cols  # Calcola il numero di righe necessarie
+# num_features = len(categorical_columns)
+# cols = 1
+# rows = (num_features + cols - 1) // cols
 
-# Configura la figura
-fig, axes = plt.subplots(rows, cols, figsize=(12, rows * 5), constrained_layout=True)
+# fig, axes = plt.subplots(rows, cols, figsize=(20, rows * 8), constrained_layout=True)
+# axes = axes.flatten()
 
-# Appiattisci gli assi per iterazione semplice
-axes = axes.flatten()
-
-# Itera sulle colonne categoriche e genera un grafico per ognuna
-for idx, column in enumerate(categorical_columns):
-    ax = axes[idx]
+# for idx, column in enumerate(categorical_columns):
+#     ax = axes[idx]
+#     grouped_data = merged_data.groupby(label_column)
+#     categories = merged_data[column].fillna("np.nan").unique()
     
-    # Raggruppa i dati per le classi
-    grouped_data = merged_data.groupby(label_column)
-    categories = merged_data[column].dropna().unique()
-    
-    # Prepara i dati: conta le occorrenze di ciascuna categoria per ogni classe
-    data = {label: [group[group[column] == cat].shape[0] for cat in categories]
-            for label, group in grouped_data}
-    
-    # Crea il grafico
-    x = np.arange(len(data))  # Le etichette delle classi
-    width = 0.2  # Larghezza delle barre
-    
-    # Crea una mappa di colori per le categorie
-    colors = plt.cm.get_cmap("tab20", len(categories))  # Colori distinti per ogni categoria
-    
-    # Aggiungi le barre per ogni categoria (colori diversi per ogni categoria)
-    for i, (label, counts) in enumerate(data.items()):
-        ax.barh(x + i * width, counts, width, label=label, color=colors(i))  # Usa colori distinti
-    
-    # Etichette e titoli
-    ax.set_title("Distribuzione delle categorie per '{}'".format(column))
-    ax.set_xlabel("Conteggio")
-    ax.set_ylabel("Classi")
-    ax.set_yticks(x + width / 2)
-    ax.set_yticklabels([str(label) for label in data.keys()])
-    ax.legend(title="Classi")
-    
-# Rimuovi eventuali assi vuoti
-for idx in range(num_features, len(axes)):
-    fig.delaxes(axes[idx])
+#     data = {cat: [group[group[column].fillna("np.nan") == cat].shape[0] for label, group in grouped_data]
+#             for cat in categories}
 
-# Salva come PNG o PDF
-if save_as_pdf:
-    with PdfPages(output_file) as pdf:
-        pdf.savefig(fig)
-else:
-    plt.savefig(output_file, dpi=300)
+#     y = np.arange(len(grouped_data))
+#     height = 0.15
 
-print("Grafici salvati in: {}".format(output_file))
+#     colors = plt.cm.get_cmap("tab10", len(categories))
 
+#     if column == "age_at_diagnosis_decade":
+#         height = 0.1
+#         ax.set_title("Distribuzione per 'age_at_diagnosis_decade'")
+#         ax.set_yticks(y + (len(categories) - 1) * height / 2)
+#         ax.set_yticklabels(['20', '30', '40', '50', '60', '70', '80', '90', 'np.nan'])
+#         ax.set_ylim(-0.2, len(grouped_data))
+#     else:
+#         ax.set_title("Distribuzione delle categorie per '{}'".format(column))
 
+#     for i, (category, counts) in enumerate(data.items()):
+#         ax.barh(y + i * height, counts, height, label=category, color=colors(i))
 
+#     ax.set_ylabel("Classi")
+#     ax.set_xlabel("Conteggio")
+#     ax.set_yticks(y + (len(categories) - 1) * height / 2)
+#     ax.set_yticklabels(['Normal', 'LumB', 'LumA', 'Her2', 'Basal'])
+#     ax.legend(title="Categorie", bbox_to_anchor=(1.05, 1), loc="upper left")
 
+# for idx in range(num_features, len(axes)):
+#     fig.delaxes(axes[idx])
+
+# if save_as_pdf:
+#     with PdfPages(output_file) as pdf:
+#         pdf.savefig(fig)
+# else:
+#     plt.savefig(output_file, dpi=300)
+
+# print("Grafici salvati in: {}".format(output_file))
 #fine test
 
 # Conteggio delle occorrenze della stringa "nan" per ogni colonna (test: per capire quanti valori nulli in ogni categoria)

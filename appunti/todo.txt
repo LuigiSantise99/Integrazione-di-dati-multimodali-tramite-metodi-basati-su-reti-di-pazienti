@@ -33,6 +33,22 @@ capire anche perchè nella shape le colonne vanno a +1, mentre le righe no
 		creazione id map e class map
 		creazione grafo g 
 			controllato che ogni nodo abbia le giuste features e label +
+			info da aggiungere alla tesi: 
+			il codice esegue il training in modo trasduttivo. Questo significa che:
+
+			Non crei due reti disgiunte per train e test:
+			Tutti i nodi (inclusi quelli del test set) rimangono connessi nella stessa rete. Il grafo non viene suddiviso in due sottografi separati. In altre parole, i nodi nel 			test set possono essere vicini o connessi ai nodi nel train set.
+
+			Divisione basata sulle label:
+			Durante l'addestramento, il modello non utilizza le label dei nodi nel test set (i nodi con l'attributo test=True). Tuttavia, questi nodi rimangono parte del grafo e 			contribuiscono alla struttura topologica. I nodi di test possono influenzare l'addestramento del modello perché le informazioni di vicinato passano comunque 			attraverso di loro.
+
+			L'attributo delle label nel test set:
+			Nel test set, i nodi hanno ancora le loro etichette, ma queste non vengono utilizzate durante l'addestramento. Le label vengono utilizzate solo durante la fase di 			valutazione per calcolare le metriche.
+
+			In breve: stai addestrando un modello trasduttivo, in cui:
+
+			L'intero grafo (inclusi train, validation, e test) viene usato per costruire embedding dei nodi.
+			Durante il training, solo i nodi del training set (non quelli di test) hanno le loro label visibili al modello.
 		
 
 	usare graphsage:

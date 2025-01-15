@@ -12,7 +12,7 @@ modalities <- c( 'DNAm' , 'miRNA' , 'mRNA' )
 
 W <- read.csv(file.path("affinity_matrices", project, "fused_affinity_matrix_with_id.csv"), row.names = 1) #ho usato snfpy
 
-# Non viene usato perchè le features vengono aggiunte quando viene ultimato il grafo
+# Non viene usato perchè le features vengono aggiunte quando viene convertito il grafo
 # features_df <- read.csv(file.path("graphsage_input", project, paste0(project, "-features_df.csv")), row.names = 1) 
 
 all_idx <- rownames(W)
@@ -32,4 +32,4 @@ print(length(V(g)))
 
 
 # Save the dataframe to CSV
-write.csv(as_long_data_frame(g), file = file.path("graphsage_input", project, paste0(project, "-G.csv")))
+write.csv(as_long_data_frame(g), file = file.path("graphsage_input", project, "exp_1", paste0(project, "-G.csv")))

@@ -7,7 +7,7 @@ import os
 import csv
 from collections import Counter, OrderedDict
 from networkx.readwrite import json_graph
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.impute import KNNImputer
@@ -15,6 +15,7 @@ from sklearn.impute import KNNImputer
 tcga_project = 'BRCA'
 os.makedirs('graphsage_input/{}'.format(tcga_project), exist_ok=True)
 log_dir = 'graphsage_input/{0}/{0}'.format(tcga_project)
+exp_n = 'exp_1' #tipo di esperimento
 
 def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_names):
     G = nx.Graph()
@@ -44,7 +45,7 @@ def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_na
     one_hot_labels = [data['label'] for _, data in G.nodes(data=True)] # array delle etichette dei nodi in formato one-hot
     labels = np.argmax(one_hot_labels, axis=1) # array delle etichette dei nodi in formato intero
 
-    random_state=42
+    random_state = 42
 
     train_nodes, test_nodes = train_test_split(list(G.nodes()), test_size=0.2, shuffle=True, stratify=labels, random_state=random_state) # 10% test set del set completo (20% per fare uguale a mogdx)
     for node in test_nodes:
@@ -80,20 +81,56 @@ def create_graph_from_csv(g_csv, node_data, feats_data, patient_ids, feature_nam
     for _, row in g_csv.iterrows():
         G.add_edge(row['from_name'], row['to_name'], train_removed=False, test_removed=False)
     
-    # Suddividi i nodi in train, validation e test
+    # Suddivisione in train, val e test set (k-fold cv)
+    # Ottieni le label dei nodi
     one_hot_labels = [data['label'] for _, data in G.nodes(data=True)]
     labels = np.argmax(one_hot_labels, axis=1)
-    
-    random_state = 42
-    train_nodes, test_nodes = train_test_split(list(G.nodes()), test_size=0.2, shuffle=True, stratify=labels, random_state=random_state)
-    for node in test_nodes:
-        G.node[node]['test'] = True
-    
-    train_labels = np.argmax([G.node[node].get('label') for node in train_nodes], axis=1)
+    nodes = list(G.nodes())
 
-    train_nodes, val_nodes = train_test_split(train_nodes, test_size=0.15, shuffle=True, stratify=train_labels, random_state=random_state)
-    for node in val_nodes:
-        G.node[node]['val'] = True
+    # Inizializza lo StratifiedKFold
+    random_state = 42
+    n_splits = 5
+    skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=random_state)
+
+    # Per ogni fold
+    for fold_idx, (train_val_idx, test_idx) in enumerate(skf.split(nodes, labels)):
+  
+        # Crea una copia del grafo per il fold
+        G_fold = G.copy()
+        
+        # Dividi i nodi in train/val e test
+        train_val_nodes = [nodes[i] for i in train_val_idx]
+        test_nodes = [nodes[i] for i in test_idx]
+
+        # Assegna i nodi di test come True
+        for node in test_nodes:
+            G_fold.node[node]['test'] = True
+    
+        # Dividi train_val in train e validation
+        train_val_labels = np.array([labels[i] for i in train_val_idx])
+        train_idx, val_idx = train_test_split(
+            range(len(train_val_nodes)),
+            test_size=0.15,
+            shuffle=True,
+            stratify=train_val_labels,
+            random_state=random_state
+        )
+    
+        train_nodes = [train_val_nodes[i] for i in train_idx]
+        val_nodes = [train_val_nodes[i] for i in val_idx]
+    
+        # Assegna i nodi di validation come True
+        for node in val_nodes:
+            G_fold.node[node]['val'] = True
+
+        # Salva il grafo in formato JSON
+        output_file = "graphsage_input/{0}/{1}/{0}-G{2}.json".format(tcga_project, exp_n, fold_idx + 1)
+        with open(output_file, 'w') as f:
+            json.dump(json_graph.node_link_data(G_fold), f)
+    
+        print("Grafo {0}/{1} salvato.".format(fold_idx + 1, n_splits))
+        print("Train nodes: {0}, Validation nodes: {1}, Test nodes: {2}".format(len(train_nodes), len(val_nodes), len(test_nodes)))
+
 
     # Conteggio nodi in ciascun set e cardinalità delle label (test: quanti nodi per ogni set e quanti nodi per ogni label in ogni set)
 #     label_mapping = {0: "Basal", 1: "Her2", 2: "LumA", 3: "LumB", 4: "Normal"}
@@ -247,8 +284,8 @@ np.save('{}-feats.npy'.format(log_dir), encoded_features)
 print('Features of patients successfully saved.')
 
 # Salva il file delle features come dataframe id_paziente x features
-df_encoded_features = pd.DataFrame(encoded_features, index=node_ids)
-df_encoded_features.to_csv('{}-features_df.csv'.format(log_dir))
+# df_encoded_features = pd.DataFrame(encoded_features, index=node_ids)
+# df_encoded_features.to_csv('{}-features_df.csv'.format(log_dir))
 
 # Carica la matrice di affinità fusa
 affinity_matrix = np.load('affinity_matrices/{}/fused_affinity_matrix.npy'.format(tcga_project))
@@ -267,10 +304,6 @@ affinity_matrix = np.load('affinity_matrices/{}/fused_affinity_matrix.npy'.forma
 #     print("Node ID: {0}, Features: {1}, Label: {2}".format(node_id, data.get('features'), data.get('label')))
 
 # Converte il grafo csv in un grafo json completo di caratteristiche e label e split set
-g_csv = pd.read_csv('{}-G.csv'.format(log_dir)) #se uso snfpy
+g_csv = pd.read_csv('graphsage_input/{0}/{1}/{0}-G.csv'.format(tcga_project, exp_n)) #se è stato usato snfpy (primo esperimento)
 # g_csv = pd.read_csv('graphsage_input/BRCA/mRNA_miRNA_DNAm_graph.csv'.format(log_dir)) #se affinity_matrix creata seguendo pipeline di mogdx (nomde DA CAMBIARE DURANTE SALVATAGGIO)
-G = create_graph_from_csv(g_csv, class_map, encoded_features, node_ids, encoder.get_feature_names(categorical_columns))
-
-with open('{}-G.json'.format(log_dir), 'w') as f:
-    json.dump(json_graph.node_link_data(G), f)
-print('Graph successfully saved.')
+create_graph_from_csv(g_csv, class_map, encoded_features, node_ids, encoder.get_feature_names(categorical_columns))

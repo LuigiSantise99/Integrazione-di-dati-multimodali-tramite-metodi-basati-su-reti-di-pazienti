@@ -5,6 +5,7 @@ affinity_matrices/
 
 # output files (G, mapping, etc.)
 graphsage_input/
+results/
 
 # test
 merged_data.csv

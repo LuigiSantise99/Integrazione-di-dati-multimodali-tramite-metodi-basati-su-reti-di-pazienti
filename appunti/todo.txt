@@ -18,8 +18,9 @@ capire anche perchè nella shape le colonne vanno a +1, mentre le righe no
 	poi usare i datexpr nel mio snf, delle omiche usate nella tabella del paper (quella evidenziata) +
 	
 	preprocessing: dat expr vanno presi solo i top genes +
+		top genes: jessica: vengono calcolati con la differential expression e logistic regression
 		per salvare il file txt dei topgenes ho usato questa riga: write.table(top_genes, "raw/top_genes.txt", row.names = FALSE, col.names = FALSE) # dopo aver load(.rds)
-		se uso già i topgeni, inutile fare rsvd? per ora non ho usato rsvd 
+		se uso già i topgeni, inutile fare rsvd? 
 
 	creazione dei dati di input: +
 		innanzitutto ho unito i tre file meta mantenendo solo i pazienti in comune. -> sono 696 pazienti, il paper ne contava 698.
@@ -49,6 +50,12 @@ capire anche perchè nella shape le colonne vanno a +1, mentre le righe no
 
 			L'intero grafo (inclusi train, validation, e test) viene usato per costruire embedding dei nodi.
 			Durante il training, solo i nodi del training set (non quelli di test) hanno le loro label visibili al modello.
+
+			inoltre uso k-fold cv, con k=5
+			info di jessica:
+				https://scikit-learn.org/1.5/_images/grid_search_cross_validation.png
+				lo si usa perchè lo usa anche mogdx, quindi per avere un confronto lineare e uguale
+			
 		
 
 	usare graphsage:
@@ -66,17 +73,7 @@ capire anche perchè nella shape le colonne vanno a +1, mentre le righe no
 				in graphsage-input-generator ho ordinato gli id in ordine alfabetico così da risultare coerente col grafo csv
 			capire se e come rimuovere le colonne color dei grafi creati su mogdx
 
-		
-		in pratica sono 2 esperimenti: 
-		1) quello che stai facendo adesso, ciò ti calcoli le matrici di similarità con affinity graph e usi SNF di python per integrare. Poi usi 		snf.to.graph per sparsificare. +
-		2) usi la pipeli di mogdx cioè basta che fai girare knn_to_graph.R + SNF.R, cioè gli script già disponibili. Però devi vedere appunto come usare solo i 696 pazienti in comune
-		la differenza sta in come vengono create le matrici di affinità delle singole omiche. Nel primo caso usi la solita scaled exponential e poi integri
-		snel secondo caso usi similarità differenti e sparsifichi anche le singole omiche, non solo quella integrata
-		la mia idea è che confrontando l exp 2 va mogdx, siccome usiamo la stessa costruzione del grafo integrato, ci permette meglio di capire se graphsage+clinica è meglio di gcn-mme (che è la gnn di mogdx)
 			
-	fatto tutto. matrice di confusione+ (per quanto dice il paper di mogdx, dovrebbe essere la normal-type),Dobbiamo sapere quanti campioni abbiamo in ogni classe, 
-	 aggiungere metriche "weighted F1"+ e "accuracy"+  e plot di val+ e test(no possibile lo calcola solo alla fine dell'ottimizzazione), ++
-		grafici distribuzione delle categorie per ogni classe+
 
 Totale di pazienti per ogni label:
 Basal     104
@@ -114,31 +111,30 @@ sul git manca **MODIFICHE.md**, o comunque le modifiche al codice sia snf che gr
 		seed in cvtrait
 		aggiunta funzione snf.to.graphfromPy
 		vedere sotto secondo esperimento > snf.r
+		modifiche knn_graph_generation.R per terzo esperimento, controllo range
 
 
-
-file presentazione: 
 
 primo esperimento:
-	knn_graph_generation.R -> per avere datexpr e datmeta per ogni omica.
+	knn_graph_generation.R -> per avere datexpr e datmeta per ogni omica. 
 	affinity_matrix.py -> prende datExpr generati nella pipeline di mogdx e crea la matrice di affinità fusa con snfpy con l'aggiunta degli id dei pazienti per ogni riga/col
 	graph_creation.R -> prende la matrice di affinità con id appena creata e crea il grafo con i vari collegamenti tra nodi, usa snf.to.graph.FromPy
-	graphsage_input_generator.py -> conversione grafo valido per graphsage + aggiunta feats, label e divisione in set (con features)
+	graphsage_input_generator.py -> conversione grafo valido per graphsage + aggiunta feats, label e divisione in set + 5-fold cv (con features)
 	addestrare modello supervisionato graphsage
-	graphsage_input_generator.py -> conversione grafo valido per graphsage + aggiunta feats, label e divisione in set (senza features)
+	graphsage_input_generator.py -> conversione grafo valido per graphsage + aggiunta feats, label e divisione in set + 5-fold cv (senza features)
 	addestrare modello supervisionato graphsage
 
 
 secondo esperimento:
-	knn_graph_generation.R -> per avere grafo, datexpr e datmeta per ogni omica. (i grafi vanno spostati nella cartella MOGDx/Network/SNF)
-	SNF.R -> imposto modalities in base alle omiche che voglio considerare. Viene creato il grafo (mRNA_miRNA_DNAm_graph.csv) considerando la matrice di affinità fusa. (codice modificato per mantenere solo i pazienti in comune (696)) (cambiare destinazione grafo per farmelo trovare nella cartella inputfiles) 
-	graphsage_input_generator.py -> conversione grafo valido per graphsage + aggiunta feats, label e divisione in set (con features)
+	knn_graph_generation.R -> per avere grafo, datexpr e datmeta per ogni omica. (i grafi vanno poi spostati nella cartella MOGDx/Network/SNF)
+	SNF.R -> imposto modalities in base alle omiche che voglio considerare. Viene creato il grafo csv considerando la matrice di affinità fusa. (codice modificato per mantenere solo i pazienti in comune (696))
+	graphsage_input_generator.py -> conversione grafo valido per graphsage + aggiunta feats, label e divisione in set + 5-fold cv (con features)
 	addestrare modello supervisionato graphsage
-	graphsage_input_generator.py -> conversione grafo valido per graphsage + aggiunta feats, label e divisione in set (senza features)
+	graphsage_input_generator.py -> conversione grafo valido per graphsage + aggiunta feats, label e divisione in set + 5-fold cv (senza features)
 	addestrare modello supervisionato graphsage
 
-TEST
 
+TEST_1 (presentazione risultati primo e secondo esperimento)
 
 - Iperparametri:
 	+epoche: 50
@@ -212,3 +208,46 @@ RISULTATI SECONDO ESPERIMENTO (senza features)
  [ 1  0  4  0  1]]
 - plot: loss4
 
+
+
+con k=15 è peggiorato solo il secondo exp, il resto è piu o meno uguale (considerando le medie e le deviazioni standard avendo usato k fold cv)
+
+
+
+terzo esperimento: (usando il preprocessing di mogdx che sparsifica sia le matrici singole che quella finale)
+praticamente per ogni variabile in ogni dataset (mirna, mrna, dnam) bisogna calcolare la deviazione standard, per poi prendere le prime 500 con deviazione piu alta
+il problema è che il range di queste variabili può cambiare quindi vanno convertite ad un range che sia uguale per tutti questa cosa però va fatta solo con mirna e mrna (fare un check per la dnam ma dovrebbe avere già tutti i range uguali (0-1)).
+quindi prima vanno controllati i range:
+	+ viene fatto su knn_graph_generation.R, La modalità DNAm ha i pazienti sulle righe, quindi va trasposta per essere coerente con miRNA e mRNA, di seguito i range globali per ogni omica:
+	mRNA: Range globale:  2.979922 23.16517
+	miRNA: Range globale:  2.298648 21.88383
+	DNAm: Range globale:  0.004157793 0.9960434
+	conclusioni: DNAm non va toccata perchè ha già range [0-1], mentre mRNA e miRNA va convertita per far si che abbia range [0-1]
+	
+per la conversione mi pare che volesse usare min-max la prof per il controllo. 
+Dovevi fare il boxplot per miRNA ed mRNA di massimo per ogni feature, minimo per ogni feature e min-max per ogni feature. quindi 3 boxplot per mirna e 3 per mrna:
+	+ nella cartella di mogdx c'è il file Rplots.pdf che contiente i 3 boxplot per ogni omica (anche dnam ho messo)
+
+Ti rispiego quale è il problema: nel pre-processing di mogdx la feature selection viene fatta usando la differential expression o la regressione logistica multinomiale
+per fare sia l'espressione differenziale che la regression logistica. tu devi fornire le etichette dei dati, loro le hanno fornite tutte, comprese quelle del test set
+ora, è vero che il modello viene addestrato in modo trasduttivo (quindi il modello nel training vede tutti gli archi del grafo) ma non può vedere le etichette
+se nella feature selection gliele fai vedere hai quello che viene chiamato information leakage. Cioè delle informazioni del test set sono scivolate all'interno dell'addestramento
+e questo di solito porta a delle metriche di predizione over-ottimiche, cioè migliori di quanto dovrebbero essere
+noi vogliamo vedere se il nostro modello regge anche senza questo bias, quindi ci aspettiamo un piccolo abbassamento delle performance
+	+ ho modificato il file knn_graph_generation.R e aggiunto la funzione expr.to.graph.fs che normalizza e seleziona le feature con migliore deviazione standard
+	expr.to.graph: prende i datExpr e li usa per calcolare le matrici di similarità e per sparsificarle
+
+
+terzo esperimento:
+	knn_graph_generation.R -> per avere grafo, datexpr e datmeta per ogni omica. (i grafi vanno poi spostati nella cartella MOGDx/Network/SNF). Diversamente dal secondo esperimento è stata modificato la funzione expr.to.graph per creare il grafo in maniera diversa 
+	
+	SNF.R -> imposto modalities in base alle omiche che voglio considerare. Viene creato il grafo csv considerando la matrice di affinità fusa. (codice modificato per mantenere solo i pazienti in comune (696))
+	graphsage_input_generator.py -> conversione grafo valido per graphsage + aggiunta feats, label e divisione in set + 5-fold cv (con features)
+	addestrare modello supervisionato graphsage
+	graphsage_input_generator.py -> conversione grafo valido per graphsage + aggiunta feats, label e divisione in set + 5-fold cv (senza features)
+	addestrare modello supervisionato graphsage
+
+finito il terzo esperimento fare csv con:
+	risultati dev standard exp1 con e senza features
+	risultati dev standard exp2 con e senza features
+	risultati dev standard exp3 con e senza features

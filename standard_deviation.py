@@ -7,8 +7,8 @@ import numpy as np
 ###############################################################################
 
 cancer_type = 'BRCA'
-exp_type    = 'exp_1'      # Puoi cambiare a piacere (es. 'exp_2', 'exp_3', ...)
-use_features = True        # Se True => 'with_features', altrimenti 'no_features'
+exp_type    = 'exp_2'      # Puoi cambiare a piacere (es. 'exp_2', 'exp_3', ...)
+use_features = False        # Se True => 'with_features', altrimenti 'no_features'
 
 # Converte la variabile boolean in una stringa (per costruire il path di output)
 features_str = 'with_features' if use_features else 'no_features'
@@ -19,7 +19,7 @@ features_str = 'with_features' if use_features else 'no_features'
 # oppure
 #   "graphsage_input/BRCA/exp_1/exp_1-no_features/metriche/graph1/test_stats.txt"
 input_dir = "graphsage_input/{0}/{1}/{1}-features".format(cancer_type, exp_type) if use_features else \
-            "graphsage_input/{0}/{1}/{1}-no_features".format(cancer_type, exp_type)
+            "graphsage_input/{0}/{1}/{1}-nofeatures".format(cancer_type, exp_type)
 
 ###############################################################################
 # FUNZIONI DI UTILITÀ

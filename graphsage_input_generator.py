@@ -15,7 +15,7 @@ from sklearn.impute import KNNImputer
 tcga_project = 'BRCA'
 os.makedirs('graphsage_input/{}'.format(tcga_project), exist_ok=True)
 log_dir = 'graphsage_input/{0}/{0}'.format(tcga_project)
-exp_n = 'exp_1' #tipo di esperimento
+exp_n = 'exp_3' #tipo di esperimento
 
 def create_graph(affinity_matrix, node_data, feats_data, patient_ids, feature_names):
     G = nx.Graph()
@@ -70,12 +70,12 @@ def create_graph_from_csv(g_csv, node_data, feats_data, patient_ids, feature_nam
     G = nx.Graph()
     
     # Aggiungi i nodi con etichette e caratteristiche
-    if isinstance(feats_data, np.ndarray):
-        feats_data_df = pd.DataFrame(feats_data, index=patient_ids, columns=feature_names)
+#     if isinstance(feats_data, np.ndarray):
+#         feats_data_df = pd.DataFrame(feats_data, index=patient_ids, columns=feature_names)
 
     for node_id, label in node_data.items():
-        features = feats_data_df.loc[node_id].tolist()
-        G.add_node(node_id, label=label, features=features, val=False, test=False)
+#         features = feats_data_df.loc[node_id].tolist()
+        G.add_node(node_id, label=label, val=False, test=False)
         
     # Aggiungi gli archi dal CSV
     for _, row in g_csv.iterrows():

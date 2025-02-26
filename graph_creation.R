@@ -5,6 +5,7 @@ source('../MOGDx/PreProcessing/R_Preprocessing/preprocess_functions.R')
 
 setwd('~/tesi-progetto')
 
+trait <- c('paper_BRCA_Subtype_PAM50')
 dataset <- 'TCGA'
 project <- 'BRCA'
 index_col <- 'patient'
@@ -12,12 +13,9 @@ modalities <- c( 'DNAm' , 'miRNA' , 'mRNA' )
 
 W <- read.csv(file.path("affinity_matrices", project, "fused_affinity_matrix_with_id.csv"), row.names = 1) #ho usato snfpy
 
-# Non viene usato perchè le features vengono aggiunte quando viene convertito il grafo
-# features_df <- read.csv(file.path("graphsage_input", project, paste0(project, "-features_df.csv")), row.names = 1) 
-
 all_idx <- rownames(W)
 
-colnames <- c('patient' ,  'race' , 'gender'  , 'ethnicity', 'age_at_diagnosis')
+colnames <- c('patient' ,  'race' , 'gender'  , 'ethnicity', 'age_at_diagnosis', trait)
 datMeta <- t(data.frame( row.names = colnames))
 for (mod in modalities) {
     print(mod)
@@ -27,7 +25,7 @@ datMeta <- datMeta[!(duplicated(datMeta)),]
 rownames(datMeta) <- datMeta[[index_col]]
 print(dim(datMeta))
 
-g <- snf.to.graph.fromPy(W , datMeta , all_idx)
+g <- snf.to.graph.fromPy(W , datMeta , all_idx, trait)
 print(length(V(g)))
 
 

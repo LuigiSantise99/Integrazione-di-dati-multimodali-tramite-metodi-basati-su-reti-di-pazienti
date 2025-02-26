@@ -7,8 +7,8 @@ import numpy as np
 ###############################################################################
 
 cancer_type = 'BRCA'
-exp_type    = 'exp_2'      # Puoi cambiare a piacere (es. 'exp_2', 'exp_3', ...)
-use_features = False        # Se True => 'with_features', altrimenti 'no_features'
+exp_type    = 'exp_1'      # Puoi cambiare a piacere (es. 'exp_2', 'exp_3', ...)
+use_features = True        # Se True => 'with_features', altrimenti 'no_features'
 
 # Converte la variabile boolean in una stringa (per costruire il path di output)
 features_str = 'with_features' if use_features else 'no_features'

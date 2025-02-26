@@ -1,12 +1,66 @@
 scaricarare il dataset brca +
 
 preprocessing di brca +
-	cambiare informazioni cliniche da visualizzare (per i fenotipi? che indicano quali campioni rimuovere in base alle informazioni mancanti) +
-							(fenotipi lasciati uguali all'originale)
-	aggiungere seed 42 alla funzione cvTrait (dentro la funzione in preprocess_function) +
-	knn +
-	controllare sia il numero di pazienti che le features +
-		il numero di features dei processati controllate aprendo il file Rdata su R (con load()) e per mRNA e miRNA controllare il numero di righe di datExp, per le altre il numero di colonne. Il numero di features degli estratti e il numero dei pazienti controllare la matrice (n x m) che esce fuori con knn, n->n_feature m->n_pazienti
+	girato il codice Preprocessing.R fornito da mogdx: Ogni sezione del codice segue una struttura simile per ogni omica, in cui si caricano i dati, si puliscono e si preparano per l'analisi differenziale, e infine si esegue l'analisi per determinare le variabili di interesse.
+	Generazione del Meta File 
+		* Meta data extraction: La prima parte del codice si occupa della generazione di un file di metadati contenente informazioni sui pazienti come race, gender, ethnicity, age_at_diagnosis, e una caratteristica target (trait), che potrebbe essere una delle classi cliniche o sottotipi di cancro.
+		* Filtraggio: Si rimuovono le righe con valori mancanti per il tratto target (trait), e si eliminano i duplicati. Questo è un passaggio fondamentale per garantire che ogni paziente abbia solo una riga di metadati per ciascun tratto.
+		* Salvataggio: I metadati vengono salvati in un file CSV per un successivo utilizzo.
+	Preprocessing mRNA
+		* Caricamento dei dati di espressione genica (mRNA): Vengono caricati i dati di espressione genica mRNA da un file .rda che contiene una matrice di conteggi dei geni.
+   		* Filtraggio delle colonne duplicate: Si rimuovono le colonne duplicate basate sui nomi delle colonne (ossia, pazienti duplicati).
+		* Intersezione con i metadati: Si identificano le colonne comuni tra i dati di espressione mRNA e il file di metadati e si mantengono solo le colonne corrispondenti.
+		* Analisi dell'espressione differenziale: Si esegue un'analisi dell'espressione differenziale per trovare i geni significativamente espressi associati al tratto (trait), selezionando i primi 500 geni più significativi.
+  		* Salvataggio dei risultati: I risultati dell'analisi vengono salvati in un file .RData che contiene i dati espressi, i metadati aggiornati, e i geni significativi.
+	Preprocessing miRNA
+		*Caricamento dei dati di espressione miRNA: I dati di espressione miRNA vengono caricati da un file .rda.
+		*Estrazione dei conteggi: Viene costruita una matrice che separa i dati di conteggio e i dati normalizzati (letture per milione).
+		*Intersezione con i metadati: Come nel caso mRNA, si ottiene l'intersezione tra i dati miRNA e i metadati per mantenere solo i campioni comuni.
+		*Analisi dell'espressione differenziale: Si esegue un'analisi dell'espressione differenziale per i miRNA, selezionando i 200 miRNA più significativi.
+		*Salvataggio dei risultati: I risultati dell'analisi, tra cui i dati espressi e i miRNA significativi, vengono salvati in un file .RData.
+	Preprocessing DNAm (Metilazione del DNA)
+		*Caricamento dei dati di metilazione: I dati di metilazione del DNA vengono caricati da un file .rda.
+		*Filtraggio dei dati: Si rimuovono i siti CpG con valori mancanti (tramite la funzione complete.cases()), mantenendo solo i siti di metilazione completi.
+		*Selezione dei siti CpG variabili: Viene calcolata la varianza di metilazione per ogni sito CpG e vengono selezionati i 200.000 siti più variabili.
+		*Intersezione con i metadati: Si eseguono operazioni simili al mRNA e miRNA per allineare i dati di metilazione con i metadati, mantenendo solo i campioni comuni.
+		*Analisi dell'associazione tra CpG e fenotipi: Si esegue una regressione Lasso (usando la funzione cvTrait) per identificare i siti CpG più associati al tratto di interesse (trait), usando una validazione incrociata con 10 fold.
+			+ all'interno usa la funzione cvTrait (usata in dnam) (che è definita in preprocess_function), in cui si è aggiunto/modificato il seed 42 per migliorare la gestione della riproducibilità dei risultati e che quindi le operazioni stocastiche all'interno della funzione siano controllate e riproducibili.
+		*Salvataggio dei risultati: I risultati finali, tra cui i siti CpG selezionati, i dati espressi e i metadati, vengono salvati in un file .RData.
+	In Sintesi:
+		*Pulizia e preparazione: Per ciascun tipo di dato omico (mRNA, miRNA, DNAm), i dati vengono ripuliti da duplicati e valori mancanti.
+		*Intersezione con i metadati: Per garantire che i dati siano correttamente associati ai pazienti e ai tratti, si esegue un'operazione di intersezione tra i dati omici e i metadati, mantenendo solo i campioni comuni.
+		*Analisi differenziale: Si eseguono analisi differenziali per identificare i geni, miRNA o siti CpG più significativi associati ai tratti di interesse, utilizzando tecniche statistiche come l'analisi dell'espressione differenziale e la regressione Lasso.
+		*Salvataggio dei risultati: I risultati vengono infine salvati in file per un uso successivo, come la modellizzazione predittiva o l'interpretazione biologica.
+	Ogni passaggio è fondamentale per preparare i dati in modo che possano essere utilizzati in modelli predittivi o analisi statistiche, garantendo che ogni modalità omica sia trattata adeguatamente prima dell'analisi finale.
+
+	knn_graph_generation.R: vengono calcolati i datmeta, datexpr e graph. Ci sono due vie, in base all'esperimento che si sta effettuando. 
+		*Per i primi due esperimenti si usa la funzione expr.to.graph (originale dal preprocessing di mogdx) e make.knn.graph:  progettate per costruire un grafo a partire da un dataset di espressione genica, di una delle modalità omiche, utilizzando una tecnica basata sui vicini più prossimi (K-Nearest Neighbors, KNN) e successivamente visualizzare e analizzare la relazione tra i campioni. (ci sono dei plot che posso creare e mettere come immagini, plot.igraph)
+			+ make.knn.graph(D, k): Questa funzione crea un grafo utilizzando un algoritmo K-Nearest Neighbors (KNN) per identificare le relazioni di vicinanza tra i campioni (celle), tramite il calcolo delle distanze euclidee. k=15
+			+ expr.to.graph: Questa funzione costruisce un grafo basato sull'espressione differenziale dei dati, utilizzando il concetto di correlazione tra le espressioni geniche (o altre feature) come base per definire le connessioni tra i campioni. A seconda della modalità omica (modality), la funzione seleziona la matrice di espressione appropriata, Se la modalità è mRNA o miRNA, viene selezionato un sottoinsieme di geni top (top_genes) dalle righe di datExpr. Se la modalità è differente, come DNAm, viene utilizzata la trasposizione di datExpr con le colonne corrispondenti ai geni top per il tratto (trait). Avviene anche una normalizzazione: la matrice viene centrata (le medie vengono sottratte da ciascuna riga). Questo passaggio è importante per rimuovere eventuali bias derivanti da valori di espressione più alti o più bassi tra i campioni, La correlazione riflette la somiglianza tra i campioni, ed è utilizzata per determinare la relazione tra i campioni stessi. infine viene ripulito da loop e edge multipli e avviene un etichettatura dei nodi (nome e tratto)
+		* Per il terzo esperimento la funzione expr.to.graph è stata modificata. Normalizzazione Min-Max: La normalizzazione min-max viene applicata alla matrice di espressione per riportare i valori all'interno di un intervallo [0, 1]. Questo è utile per evitare che le caratteristiche con scale diverse (ad esempio, alcune variabili possono avere valori molto più grandi o piccoli di altre) influenzino in modo sproporzionato la costruzione del grafo. Questa normalizzazione è applicata solo alle modalità mRNA e miRNA, mentre per DNAm si presume che i valori siano già normalizzati nell'intervallo [0, 1], quindi non viene applicata alcuna modifica. Dopo la normalizzazione, la funzione seleziona le 500 feature (espressioni geniche, miRNA, o altre caratteristiche) con la maggiore variabilità, calcolata sulla base della deviazione standard di ciascuna riga della matrice di espressione. Questo passo è importante per ridurre la dimensionalità del dataset, concentrandosi solo sulle variabili che mostrano la maggiore variazione, che sono più probabili di essere informative per l'analisi. quindi viene creata una matrice di correlazione tra le feature selezionate e segue il procedimento della funzione originale.
+
+	primo esperimento (in questo esperimento non è stato usato il grafo fornito da expr.to.graph descritto prima): su python sono state create matrici di affinità unimodali (partendo dai datExpr per ogni modalità omica) per poi fonderle in un'unica matrice di affinità fusa. più nel dettaglio: sono stati caricati i nomi dei migliori siti CpG (per la metilazione del DNA) e dei migliori geni per miRNA e mRNA. Questi sono usati per ridurre i dati alle caratteristiche più rilevanti. Filtrare i dataframe per mantenere solo i campioni che sono presenti in tutte e tre le modalità omiche. Questo è un passo cruciale quando si combinano dati da fonti diverse.  Creare matrici di affinità per ciascuna modalità omica utilizzando il metodo make_affinity del pacchetto snf (Similarity Network Fusion). La funzione calcola le somiglianze (affinità) tra i campioni usando la distanza euclidea. Le affinità vengono poi normalizzate e vengono mantenuti solo i 15 vicini più prossimi (K=15) per ogni campione. Combinare le matrici di affinità di tutte e tre le modalità omiche in una singola matrice di affinità fusa. Il metodo snf utilizza un algoritmo di fusione per combinare le informazioni provenienti da diverse fonti di dati (omic). a questo punto viene usato una funzione in R (fornito dal preprocessing di mogdx) modificato per essere più affine all'obiettivo: Creare un grafo K-Nearest Neighbors (KNN) utilizzando la matrice di affinità W. La funzione make.knn.graph prende la matrice W e crea un grafo in cui ogni nodo è connesso ai suoi 15 vicini più prossimi, basandosi sulle affinità calcolate nella matrice. L'algoritmo KNN crea un grafo in cui le connessioni tra i nodi rappresentano le somiglianze tra i campioni, e K=15 indica che ogni nodo è connesso ai 15 nodi più simili. c'è anche la rimozione di "autolink" o "self-loops" dalla matrice di affinità W (creata nel passaggio precedente). Gli autolink sono quelli in cui un nodo è connesso a se stesso, e nel contesto di SNF questi hanno un valore di 0.5. anche Rimozione dei Nodi Isolati,  i nodi che non hanno connessioni. in più vengono assegnati i nomi dei campioni ai nodi.
+
+	secondo esperimento: in questo esperimento invece sono stati usati i grafi prodotti dalla knn descritta sopra (quindi quella fornita da mogdx). Seguendo quindi la pipeline del preprocessing di mogdx: in modo tale da combinare le informazioni di affinità da diverse fonti (modalità) utilizzando il metodo Similarity Network Fusion (SNF), e successivamente generare un grafo. Nel dettaglio: Allineamento dei pazienti comuni: Per ciascuna modalità, il codice trova l'intersezione tra i pazienti presenti nei metadati di tutte le modalità. Questo è essenziale per garantire che i dati provenienti da modalità diverse siano confrontabili, poiché i grafi devono essere costruiti utilizzando gli stessi campioni (696 campioni).  vengono usati quindi i grafi che rappresentano le relazioni di similarità tra i pazienti. Per ogni rete di similarità, viene creato un grafo utilizzando graph_from_data_frame, in cui le connessioni (edges) rappresentano le relazioni di similarità tra pazienti. I nodi rappresentano i pazienti, e le connessioni sono semplificate rimuovendo i loop e gli edge multipli tramite simplify(). La matrice di affinità per ciascun grafo viene estratta utilizzando as_adjacency_matrix. Ogni matrice di affinità rappresenta le connessioni (similarità) tra i pazienti in quel particolare grafo. Viene poi selezionato un sottoinsieme di pazienti comuni, assicurando che tutte le matrici abbiano la stessa dimensione e gli stessi pazienti. Fusione tramite SNF: Le matrici di affinità (ottenute dalle modalità omiche) vengono fuse usando l'algoritmo SNF (Similarity Network Fusion), implementato nel pacchetto SNFtool. L'algoritmo combina le informazioni di affinità provenienti dalle diverse modalità, creando una matrice di affinità fusa che integra le relazioni di similarità tra i pazienti da tutte le modalità. La funzione SNF prende le matrici di affinità, il numero di vicini (K=15) e il numero di iterazioni (T=10) per calcolare la fusione. rimuovendo anche gli autolink.  La matrice di affinità fusa (W) viene quindi utilizzata per creare un grafo finale con La funzione snf.to.graph: creando un grafo in cui ogni nodo (paziente) è connesso ai suoi 15 vicini più prossimi, basandosi sulla matrice di affinità. Il parametro K=15 indica che ogni nodo è connesso ai 15 nodi più simili, in termini di affinità, il grafo viene visualizzato come plot.pdf, rimozione dei nodi isolati e assegnazioni di attributi ai nodi, come i nomi dei campioni.
+
+	SNF.R -> imposto modalities in base alle omiche che voglio considerare. Viene creato il grafo csv considerando la matrice di affinità fusa. (codice modificato per mantenere solo i pazienti in comune (696))
+	graphsage_input_generator.py -> conversione grafo valido per graphsage + aggiunta feats, label e divisione in set + 5-fold cv (con features)
+	addestrare modello supervisionato graphsage
+	graphsage_input_generator.py -> conversione grafo valido per graphsage + aggiunta feats, label e divisione in set + 5-fold cv (senza features)
+	addestrare modello supervisionato graphsage
+
+
+	graphsage_input_generator.py -> conversione grafo valido per graphsage + aggiunta feats, label e divisione in set + 5-fold cv (con features)
+	addestrare modello supervisionato graphsage
+	graphsage_input_generator.py -> conversione grafo valido per graphsage + aggiunta feats, label e divisione in set + 5-fold cv (senza features)
+	addestrare modello supervisionato graphsage
+
+
+
+
+
+
+//(controllare sia il numero di pazienti che le features. come ho fatto? il numero di features dei processati controllate aprendo il file Rdata su R (con load()) e per mRNA e miRNA controllare il numero di righe di datExp, per le altre il numero di colonne. Il numero di features degli estratti e il numero dei pazienti controllare la matrice (n x m) che esce fuori con knn, n->n_feature m->n_pazienti)
 	
 	righe x colonne 
 miRNA: features x pazienti DA TRASPORRE
@@ -82,14 +136,6 @@ LumA      394
 LumB      125
 Normal     30
 
-matrice di confusione:
-	Basal	Her2	LumA	LumB	Normal
-Basal	20	1	0	0	0
-Her2	0	9	0	0	0
-LumA	1	0	78	0	0
-LumB	0	1	23	1	0
-Normal	1	2	3	0	0
-
 
 stato dell'arte: altri lavori che fanno una cosa simili a quello che sto facendo io
 		
@@ -134,82 +180,7 @@ secondo esperimento:
 	addestrare modello supervisionato graphsage
 
 
-TEST_1 (presentazione risultati primo e secondo esperimento)
-
-- Iperparametri:
-	+epoche: 50
-	+dropout: 0.4
-	+weight_decay: 0
-	+learning_rate: 0.001
-	+altre: 'model', 'graphsage_mean' 'max_degree', 128, , samples_1', 25, , samples_2', 25, , samples_3', 0, , dim_1', 128, , dim_2', 128, , random_context', True, , batch_size', 30, , 		sigmoid', False, identity_dim', 0, validate_iter', validate_batch_size', 64, gpu', 1,
-
-RISULTATI PRIMO ESPERIMENTO (con features)
-
-- ho usato la libreria snf di python (snfpy), per poi creare i collegamenti del grafo con snf.to.graph.FromPy, K=20, ho usato solo i top-genes
-- Il grafo per graphsage è stato creato con la presenza di features
-- metriche:
-	+val -> loss=0.63810 f1_micro=0.78571 f1_macro=0.56649 f1_weighted=0.72933 accuracy_score=0.78571 AUPRC_score=0.72385 AUC_score=0.74741 time=0.02726
-	+test -> loss=0.63533 f1_micro=0.75000 f1_macro=0.56245 f1_weighted=0.71279 accuracy_score=0.75000 AUPRC_score=0.60262 AUC_score=0.75211
-- matrice di confusione (ordine label:	Basal	Her2	LumA	LumB	Normal):
-[[20  0  1  0  0]
- [ 0  8  1  0  0]
- [ 1  0 71  6  1]
- [ 0  3 16  6  0]
- [ 1  2  3  0  0]]
-- plot: loss1
-
-
-RISULTATI PRIMO ESPERIMENTO (senza features)
-
-- ho usato la libreria snf di python (snfpy), per poi creare i collegamenti del grafo con snf.to.graph.FromPy, K=20, ho usato solo i top-genes
-- Il grafo per graphsage è stato creato senza la presenza di features, aggiungendo l'iperparametro --identity_dim 128
-- metriche:
-	+val -> loss=0.79734 f1_micro=0.79762 f1_macro=0.60728 f1_weighted=0.77086 accuracy_score=0.79762 AUPRC_score=0.73468 AUC_score=0.78235 time=0.05393
-	+test -> loss=0.60911 f1_micro=0.79286 f1_macro=0.75134 f1_weighted=0.78571 accuracy_score=0.79286 AUPRC_score=0.77693 AUC_score=0.82820
-- matrice di confusione (ordine label:	Basal	Her2	LumA	LumB	Normal):
- [[21  0  0  0  0]
- [ 0  6  1  1  1]
- [ 1  0 69  9  0]
- [ 0  0 14 11  0]
- [ 1  1  0  0  4]]
-- plot: loss2
-
-
-
-RISULTATI SECONDO ESPERIMENTO (con features)
-
-- Ho generato il grafo con knn_graph_generation.R e ho usato l'snf fornita da mogdx (SNF.R), K=20, ho usato solo i top-genes
-- Il grafo per graphsage è stato creato con la presenza di features
-- metriche:
-	+val -> loss=0.46396 f1_micro=0.86905 f1_macro=0.69525 f1_weighted=0.84116 accuracy_score=0.86905 AUPRC_score=0.82302 AUC_score=0.81222 time=0.04401
-	+test -> loss=0.51694 f1_micro=0.81429 f1_macro=0.60740 f1_weighted=0.79670 accuracy_score=0.81429 AUPRC_score=0.73552 AUC_score=0.79202
-- matrice di confusione (ordine label:	Basal	Her2	LumA	LumB	Normal):
- [[20  1  0  0  0]
- [ 0  7  1  1  0]
- [ 0  1 73  5  0]	
- [ 0  5  6 14  0]
- [ 2  1  3  0  0]]
-- plot: loss3
-
-
-
-RISULTATI SECONDO ESPERIMENTO (senza features)
-
-- Ho generato il grafo con knn_graph_generation.R e ho usato l'snf fornita da mogdx (SNF.R), K=20, ho usato solo i top-genes
-- Il grafo per graphsage è stato creato senza la presenza di features, aggiungendo l'iperparametro --identity_dim 128
-- metriche:
-	+val -> loss=0.44094 f1_micro=0.88095 f1_macro=0.80823 f1_weighted=0.88028 accuracy_score=0.88095 AUPRC_score=0.82656 AUC_score=0.89006 time=0.06273
-	+test -> loss=0.53378 f1_micro=0.84286 f1_macro=0.72184 f1_weighted=0.83046 accuracy_score=0.84286 AUPRC_score=0.79949 AUC_score=0.82918
-- matrice di confusione (ordine label:	Basal	Her2	LumA	LumB	Normal):
- [[20  1  0  0  0]
- [ 0  8  1  0  0]
- [ 0  0 73  6  0]
- [ 0  2  7 16  0]
- [ 1  0  4  0  1]]
-- plot: loss4
-
-
-
+TEST_1 k=20 (la presentazione mostra tutti i risultati e le altri info del primo e secondo esperimento)
 con k=15 è peggiorato solo il secondo exp, il resto è piu o meno uguale (considerando le medie e le deviazioni standard avendo usato k fold cv)
 
 
@@ -238,7 +209,7 @@ noi vogliamo vedere se il nostro modello regge anche senza questo bias, quindi c
 	expr.to.graph: prende i datExpr e li usa per calcolare le matrici di similarità e per sparsificarle
 
 
-terzo esperimento:
+terzo esperimento (procedimento):
 	knn_graph_generation.R -> per avere grafo, datexpr e datmeta per ogni omica. (i grafi vanno poi spostati nella cartella MOGDx/Network/SNF). Diversamente dal secondo esperimento è stata modificato la funzione expr.to.graph per creare il grafo in maniera diversa 
 	
 	SNF.R -> imposto modalities in base alle omiche che voglio considerare. Viene creato il grafo csv considerando la matrice di affinità fusa. (codice modificato per mantenere solo i pazienti in comune (696))

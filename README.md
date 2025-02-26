@@ -1,4 +1,4 @@
-# Progetto di Tesi
+# Integrazione di dati multimodali tramite metodi basati su reti di pazienti
 
 ## Descrizione
 Questo repository contiene il progetto di tesi per il corso di laurea magistrale di Informatica, svolto presso l'Università Statale di Milano. Include script Python, R, documentazione e tesi.
